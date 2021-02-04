@@ -14,6 +14,10 @@ const headers = {
     "content-type": "text/plain"
 };
 
+router.get("/", (req, res)=>{
+    res.send("<h1>My Api is working!</h1>")
+})
+
 //get the block's hash from its height
 router.get("/getblockhash/:height", (req, res)=>{
     var dataString = `{"jsonrpc":"1.0","id":"curltext","method":"getblockhash","params":["${

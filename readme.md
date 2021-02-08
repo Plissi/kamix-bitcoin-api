@@ -1,36 +1,42 @@
-#Bitcoin-api
+# Bitcoin-api
 
 This is an API created to retrieve some data from a bitcoin core full node
 
-##Installation 
+## Installation 
 
 1. After cloning the repository, run ``npm install``
 
 2. Create a .env file in the project's folder with the following information:
-RPC_USER=yourUser
-RPC_PASSWORD=yourPassword
-RPC_HOST=yourHostIPAddress
+* RPC_USER=yourUser
+* RPC_PASSWORD=yourPassword
+* RPC_HOST=yourHostIPAddress
 
-##Usage
+## Usage
 
 Run ``npm start`` to launch the application on port 3000
 
-##Documentation
+## Documentation
 
-localhost:3000/api/getblockhash/:height
+__localhost:3000/api/getblockhash/:height__
+
 return a block's hash
 
-localhost:3000/api/getblock/:hash
+__localhost:3000/api/getblock/:hash__
+
 return a block
 
-localhost:3000/api/getblockcount
+__localhost:3000/api/getblockcount__
+
 return the number of blocks in the longest bitcoin blockchain
 
-localhost:3000/api/getblockchaininfo
+__localhost:3000/api/getblockchaininfo__
+
 return information of the blockchain
 
-localhost:3000/api/getrawtransaction/:txid
+__localhost:3000/api/getrawtransaction/:txid__
+
 return a transaction
 
-localhost:3000/api/map/:hash
+__localhost:3000/api/map/:hash__
+
 return a maps of inputs and outputs of a block

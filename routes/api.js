@@ -1,7 +1,7 @@
 
 const express = require("express");
 const router = express.Router();
-var request = require("request");
+const http = require("http")
 
 const dotenv = require("dotenv");
 const { json } = require("body-parser");
@@ -9,139 +9,247 @@ dotenv.config();
 
 const USER = process.env.RPC_USER;
 const PASS = process.env.RPC_PASSWORD;
+const host = process.env.RPC_HOST;
+const port = 8332
+var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)
 
 const headers = {
-    "content-type": "text/plain"
+    "content-type": "text/plain;"
 };
 
+var options = {
+    method: "POST",
+    headers: headers,
+};
+
+function getResult(dataString, res){
+    return new Promise(result=>{
+        var httpRequest = http.request(url,options,(response)=>{
+            let tab =[];
+            response.on('data', data=>{
+                tab.push(data)
+            }).on('end', ()=>{
+                let data = Buffer.concat(tab)
+                let schema = JSON.parse(data)
+                res.schema = schema
+                result(schema.result)
+            })
+        }) 
+    
+        httpRequest.on('error', function(e) {
+            console.log('problem with request: ' + e.message);
+          });
+    
+        httpRequest.write(dataString)
+        httpRequest.end()
+    })
+}
+
 router.get("/", (req, res)=>{
-    res.send("<h1>My Api is working!</h1>")
+    res.send("<h1>It works!</h1>")
 })
 
 //get the block's hash from its height
 router.get("/getblockhash/:height", (req, res)=>{
-    var dataString = `{"jsonrpc":"1.0","id":"curltext","method":"getblockhash","params":["${
-        req.params.height
-    }"]}`;
-    var options = {
-        url: `http:${USER}:${PASS}@178.128.164.154:8332`,
-        method: "POST",
-        headers: headers,
-        body: dataString
-    };
+    var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${req.params.height}]}`;
+    var httpRequest = http.request(url,options,(response)=>{
+        response.on('data', data=>{
+            var receivedResult = JSON.parse(data)
+            res.send(receivedResult)
+        })
+    }) 
 
-    callback = (error, response, body) =>{
-        if (!error && response.statusCode==200){
-            const data = JSON.parse(body);
-            res.send(data);
-        }
-    };
+    httpRequest.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
 
-    request(options,callback);
+    httpRequest.write(dataString)
+    httpRequest.end()
 })
 
 //get the block from its hash
 router.get("/getblock/:hash", (req, res)=>{
-    var dataString = `{"jsonrpc":"1.0","id":"curltext","method":"getblock","params":["${
-        req.params.hash
-    }"]}`;
-    var options = {
-        url: `http:${USER}:${PASS}@178.128.164.154:8332`,
-        method: "POST",
-        headers: headers,
-        body: dataString
-    };
+    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${req.params.hash}`]});
+    var httpRequest = http.request(url,options,(response)=>{
+        let tab =[];
+        response.on('data', data=>{
+            console.log("start")
+            tab.push(data)
+        }).on('end', ()=>{
+            let data = Buffer.concat(tab)
+            let schema = JSON.parse(data)
+            res.send(schema)
+            res.schema = schema
+            console.log("end")
+        })
+    }) 
 
-    callback = (error, response, body) =>{
-        if (!error && response.statusCode==200){
-            const data = JSON.parse(body);
-            res.send(data);
-        }
-    };
+    httpRequest.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
 
-    request(options,callback);
+    httpRequest.write(dataString)
+    httpRequest.end()
 })
 
 //count the number of blocks present in the blockchain 
 router.get("/getblockcount", (req, res)=>{
-    var dataString = `{"jsonrpc":"1.0","id":"curltext","method":"getblockcount","params":[]}`;
-    var options = {
-        url: `http:${USER}:${PASS}@178.128.164.154:8332`,
-        method: "POST",
-        headers: headers,
-        body: dataString
-    };
+    var dataString = "{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockcount\",\"params\":[]}";
 
-    callback = (error, response, body) =>{
-        if (!error && response.statusCode==200){
-            const data = JSON.parse(body);
-            res.send(data);
-        }
-    };
+    var httpRequest = http.request(url,options,(response)=>{
+        response.on('data', data=>{
+            var receivedResult = JSON.parse(data)
+            res.send(receivedResult)
+        })
+    }) 
 
-    request(options,callback);
+    httpRequest.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
+
+    httpRequest.write(dataString)
+    httpRequest.end()
 })
 
 //return information of the blockchain
 router.get("/getblockchaininfo", (req, res)=>{
-    var dataString = `{"jsonrpc":"1.0","id":"curltext","method":"getblockchaininfo","params":[]}`;
-    var options = {
-        url: `http:${USER}:${PASS}@178.128.164.154:8332`,
-        method: "POST",
-        headers: headers,
-        body: dataString
-    };
+    var dataString = "{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockchaininfo\",\"params\":[]}";
+    
+    var httpRequest = http.request(url,options,(response)=>{
+        response.on('data', data=>{
+            var receivedResult = JSON.parse(data)
+            res.send(receivedResult)
+        })
+    }) 
 
-    callback = (error, response, body) =>{
-        if (!error && response.statusCode==200){
-            const data = JSON.parse(body);
-            res.send(data);
-        }
-    };
-
-    request(options,callback);
+    httpRequest.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
+httpRequest.
+    httpRequest.write(dataString)
+    httpRequest.end()
 })
 
 //list the latest transactions
 router.get("/listtransactions", (req, res)=>{
-    var dataString = `{"jsonrpc":"1.0","id":"curltext","method":"listtransactions","params":[]}`;
-    var options = {
-        url: `http:${USER}:${PASS}@178.128.164.154:8332`,
-        method: "POST",
-        headers: headers,
-        body: dataString
-    };
+    var dataString = "{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"listtransactions\",\"params\":[]}";
+    var httpRequest = http.request(url,options,(response)=>{
+        response.on('data', data=>{
+            var receivedResult = JSON.parse(data)
+            res.send(receivedResult)
+        })
+    }) 
 
-    callback = (error, response, body) =>{
-        if (!error && response.statusCode==200){
-            const data = JSON.parse(body);
-            res.send(data);
-        }
-    };
+    httpRequest.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
 
-    request(options,callback);
+    httpRequest.write(dataString)
+    httpRequest.end()
 })
 
 //get information about a rawtransaction from the transaction id
 router.get("/getrawtransaction/:txid", (req, res)=>{
-    var dataString = `{"jsonrpc":"1.0","id":"curltext","method":"getrawtransaction","params":["${
-        req.params.txid
-    }"]}`;
-    var options = {
-        url: `http:${USER}:${PASS}@178.128.164.154:8332`,
-        method: "POST",
-        headers: headers,
-        body: dataString
-    };
+    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${req.params.txid}`, true]});
+    var httpRequest = http.request(url,options,(response)=>{
+        let tab =[];
+        response.on('data', data=>{
+            console.log("start")
+            tab.push(data)
+        }).on('end', ()=>{
+            let data = Buffer.concat(tab)
+            let schema = JSON.parse(data)
+            res.send(schema)
+            console.log("end")
+        })
+    }) 
 
-    callback = (error, response, body) =>{
-        if (!error && response.statusCode==200){
-            const data = JSON.parse(body);
-            res.send(data);
+    httpRequest.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
+
+    httpRequest.write(dataString)
+    httpRequest.end()
+})
+
+//mapping function
+router.get("/map/:hash", (req, res)=>{
+    let txids = []
+
+    async function getBlock(){
+        var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${req.params.hash}`]});
+        const result = await getResult(dataString, res)
+        result.tx.forEach(tx =>{
+            txids.push(tx)
+        })
+        
+        let mapTx = []
+        let outs = []
+        let ins = []
+
+        for (let i = 0; i < 10; i++) {
+            let tx = await getTx(txids[i])
+            let voutTx = await getOuts(tx.vout, txids[i])
+            let vinTx = await getIns(tx.vin)
+            outs.push(voutTx) 
+            ins.push(vinTx)          
         }
-    };
 
-    request(options,callback);
+        mapTx.push({
+            ins: ins,
+            outs: outs
+        })
+        res.send(mapTx)
+    }
+    async function getTx(txid){
+        dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${txid}`, true]});
+        let tx = await getResult(dataString, res)
+        return tx
+    }
+    async function getOuts(tab, txid){
+        let outs = []
+        tab.forEach(vout => {
+            if(vout.scriptPubKey.addresses !=undefined){
+                vout.scriptPubKey.addresses.forEach(addr => {
+                    let txin = {
+                        txidIn: txid,
+                        addr: addr,
+                        out: vout.n,
+                        value: vout.value
+                    }
+                    outs.push(txin)
+                });
+            }
+        });
+        return outs
+    }
+    async function getIns(tab){
+        let ins = []
+        for (let k = 0; k < tab.length; k++) {
+            const vin = tab[k];                
+            
+            if(vin.coinbase == undefined){
+                let txid = vin.txid
+                let tx = await getTx(txid)
+                let outs = await getOuts(tx.vout, txid)
+                outs.forEach(out => {
+                    if(out.out==vin.vout){
+                        let txout = {
+                            txidOut: txid,
+                            addr: out.addr,
+                            in: vin.vout,
+                            value: out.value
+                        }
+                        ins.push(txout)
+                    }                    
+                })
+            } else{
+                console.log(vin)
+            }
+        }
+        return ins
+    }
+    getBlock()
 })
 
 module.exports = router;

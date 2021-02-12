@@ -39,4 +39,4 @@ return a transaction
 
 __localhost:3000/api/map/:hash__
 
-return a maps of inputs and outputs of a block
+return a map of inputs and outputs of a block

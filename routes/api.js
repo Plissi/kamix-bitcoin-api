@@ -125,7 +125,6 @@ router.get("/getblockchaininfo", (req, res)=>{
     httpRequest.on('error', function(e) {
         console.log('problem with request: ' + e.message);
       });
-httpRequest.
     httpRequest.write(dataString)
     httpRequest.end()
 })
@@ -189,7 +188,7 @@ router.get("/map/:hash", (req, res)=>{
 
         for (let i = 0; i < 10; i++) {
             let tx = await getTx(txids[i])
-            let voutTx = await getOuts(tx.vout, txids[i])
+            let voutTx = await getOuts(tx.vout, txids[i], result.hash)
             let vinTx = await getIns(tx.vin)
             outs.push(voutTx) 
             ins.push(vinTx)          
@@ -206,7 +205,7 @@ router.get("/map/:hash", (req, res)=>{
         let tx = await getResult(dataString, res)
         return tx
     }
-    async function getOuts(tab, txid){
+    async function getOuts(tab, txid, blockhash){
         let outs = []
         tab.forEach(vout => {
             if(vout.scriptPubKey.addresses !=undefined){
@@ -215,7 +214,8 @@ router.get("/map/:hash", (req, res)=>{
                         txidIn: txid,
                         addr: addr,
                         out: vout.n,
-                        value: vout.value
+                        value: vout.value,
+                        blockhash: blockhash
                     }
                     outs.push(txin)
                 });
@@ -231,14 +231,15 @@ router.get("/map/:hash", (req, res)=>{
             if(vin.coinbase == undefined){
                 let txid = vin.txid
                 let tx = await getTx(txid)
-                let outs = await getOuts(tx.vout, txid)
+                let outs = await getOuts(tx.vout, txid, tx.blockhash)
                 outs.forEach(out => {
                     if(out.out==vin.vout){
                         let txout = {
                             txidOut: txid,
                             addr: out.addr,
                             in: vin.vout,
-                            value: out.value
+                            value: out.value,
+                            blockhash: tx.blockhash
                         }
                         ins.push(txout)
                     }                    

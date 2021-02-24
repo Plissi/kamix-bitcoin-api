@@ -41,6 +41,10 @@ __http://localhost:3000/api/getrawtransaction/:txid__
 
 return a transaction
 
-__http://localhost:3000/api/map/:hash__
+__http://localhost:3000/api/map/:height__
 
 return a map of inputs and outputs of a block
+
+__http://localhost:3000/api/python-map/:height__
+
+return a map of inputs and outputs of a block from python script

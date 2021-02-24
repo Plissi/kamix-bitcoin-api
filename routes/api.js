@@ -173,17 +173,18 @@ router.get("/getrawtransaction/:txid", (req, res)=>{
 })
 
 //mapping function
-router.get("/map/:hash", (req, res)=>{
+router.get("/map/:height", (req, res)=>{
     let txids = []
     var start = new Date()
     console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())
     async function getBlock(){
-        var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${req.params.hash}`]});
+        var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${req.params.height}]}`;
+        const hash = await getResult(dataString, res)
+        var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
         const result = await getResult(dataString, res)
         result.tx.forEach(tx =>{
             txids.push(tx)
         })
-        
         let mapTx = []
         let outs = []
         let ins = []
@@ -261,16 +262,16 @@ router.get("/map/:hash", (req, res)=>{
 })
 
 router.get("/python-map/:height", (req, res)=>{
-    var height = req.params.height
-    var dataSent
-    const python = spawn('python3', ['./map.py', height])
+    var height = req.params.height;
+    var dataSent;
+    const python = spawn('python3', ['./map.py', height]);
     python.stdout.on('data', (data)=>{
-        console.log('Getting data...')
-        dataSent = data.toString()
-    })
+        console.log('Getting data...');
+        dataSent = data.toString();
+    });
     python.on('close', (code)=>{
-        console.log(`child process close all stdio with code ${code}`)
-        res.send(dataSent)
-    })
+        console.log(`child process close all stdio with code ${code}`);
+        res.send(dataSent);
+    });
 })
 module.exports = router;

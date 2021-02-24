@@ -78,10 +78,9 @@ def txMapFunction(ins, outs, fees):
 mapResult = []
 start = time.time()
 print("start", time.strftime("%H:%M:%S", time.localtime(start)))
-
 #for x in range(1, 11):
 #x = rpc_connection.getblockcount()
-x = sys.argv[1]
+x = int(sys.argv[1])
 block = getBlock(x)
 
 #for each transaction

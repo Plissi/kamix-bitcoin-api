@@ -174,7 +174,8 @@ router.get("/getrawtransaction/:txid", (req, res)=>{
 //mapping function
 router.get("/map/:hash", (req, res)=>{
     let txids = []
-
+    var start = new Date()
+    console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())
     async function getBlock(){
         var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${req.params.hash}`]});
         const result = await getResult(dataString, res)
@@ -186,7 +187,8 @@ router.get("/map/:hash", (req, res)=>{
         let outs = []
         let ins = []
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < txids.length; i++) {
+	    //console.log(i)
             let tx = await getTx(txids[i])
             let voutTx = await getOuts(tx.vout, txids[i], result.hash)
             let vinTx = await getIns(tx.vin)
@@ -198,6 +200,10 @@ router.get("/map/:hash", (req, res)=>{
             ins: ins,
             outs: outs
         })
+    	var end = new Date()
+    	console.log("ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds())
+	var duration  =  Math.abs(end-start)
+	console.log("duration: "+duration+"ms")
         res.send(mapTx)
     }
     async function getTx(txid){

@@ -1,7 +1,7 @@
 from bitcoinrpc.authproxy import AuthServiceProxy
 import simplejson as json
 import time
-import os
+import os, sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -80,7 +80,8 @@ start = time.time()
 print("start", time.strftime("%H:%M:%S", time.localtime(start)))
 
 #for x in range(1, 11):
-x = rpc_connection.getblockcount()
+#x = rpc_connection.getblockcount()
+x = sys.argv[1]
 block = getBlock(x)
 
 #for each transaction

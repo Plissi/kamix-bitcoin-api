@@ -260,9 +260,10 @@ router.get("/map/:hash", (req, res)=>{
     getBlock()
 })
 
-router.get("/python-map/:hash", (req, res)=>{
+router.get("/python-map/:height", (req, res)=>{
+    var height = req.params.height
     var dataSent
-    const python = spawn('python', ['./map.py'])
+    const python = spawn('python3', ['./map.py', height])
     python.stdout.on('data', (data)=>{
         console.log('Getting data...')
         dataSent = data.toString()

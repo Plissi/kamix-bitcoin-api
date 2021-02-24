@@ -10,7 +10,7 @@ user = os.getenv("RPC_USER")
 password = os.getenv("RPC_PASSWORD")
 host = os.getenv("RPC_HOST")
 
-rpc_connection = AuthServiceProxy("http://%s:%s@%s"%(user, password,host))
+rpc_connection = AuthServiceProxy("http://%s:%s@%s:8332"%(user, password,host))
 
 def getBlock(height):
     blockhash = rpc_connection.getblockhash(height)

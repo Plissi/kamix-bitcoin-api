@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const http = require("http")
+const {spawn} = require('child_process')
 
 const dotenv = require("dotenv");
 const { json } = require("body-parser");
@@ -259,4 +260,16 @@ router.get("/map/:hash", (req, res)=>{
     getBlock()
 })
 
+router.get("/python-map/:hash", (req, res)=>{
+    var dataSent
+    const python = spawn('python', ['./map.py'])
+    python.stdout.on('data', (data)=>{
+        console.log('Getting data...')
+        dataSent = data.toString()
+    })
+    python.on('close', (code)=>{
+        console.log(`child process close all stdio with code ${code}`)
+        res.send(dataSent)
+    })
+})
 module.exports = router;

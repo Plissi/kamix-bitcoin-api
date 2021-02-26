@@ -74,14 +74,14 @@ router.get("/getblock/:hash", (req, res)=>{
     var httpRequest = http.request(url,options,(response)=>{
         let tab =[];
         response.on('data', data=>{
-            console.log("start")
+            //console.log("start")
             tab.push(data)
         }).on('end', ()=>{
             let data = Buffer.concat(tab)
             let schema = JSON.parse(data)
             res.send(schema)
             res.schema = schema
-            console.log("end")
+            //console.log("end")
         })
     }) 
 
@@ -177,9 +177,11 @@ router.get("/map/:height", (req, res)=>{
     let txids = []
     var start = new Date()
     console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())
-    async function getBlock(){
         var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${req.params.height}]}`;
-        const hash = await getResult(dataString, res)
+        getResult(dataString, res).then(result=>{
+            getBlock(result)
+        })
+    async function getBlock(hash){
         var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
         const result = await getResult(dataString, res)
         result.tx.forEach(tx =>{
@@ -190,7 +192,6 @@ router.get("/map/:height", (req, res)=>{
         let ins = []
 
         for (let i = 0; i < txids.length; i++) {
-	    //console.log(i)
             let tx = await getTx(txids[i])
             let voutTx = await getOuts(tx.vout, txids[i], result.hash)
             let vinTx = await getIns(tx.vin)
@@ -204,8 +205,8 @@ router.get("/map/:height", (req, res)=>{
         })
     	var end = new Date()
     	console.log("ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds())
-	var duration  =  Math.abs(end-start)
-	console.log("duration: "+duration+"ms")
+        var duration  =  Math.abs(end-start)
+        console.log("duration: "+duration+"ms")
         res.send(mapTx)
     }
     async function getTx(txid){
@@ -258,7 +259,6 @@ router.get("/map/:height", (req, res)=>{
         }
         return ins
     }
-    getBlock()
 })
 
 router.get("/python-map/:height", (req, res)=>{
@@ -271,7 +271,8 @@ router.get("/python-map/:height", (req, res)=>{
     });
     python.on('close', (code)=>{
         console.log(`child process close all stdio with code ${code}`);
-        res.send(dataSent);
+        console.log(dataSent)
+        res.send("<h1>Done!</h1>");
     });
 })
 module.exports = router;

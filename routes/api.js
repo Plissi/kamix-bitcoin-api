@@ -23,7 +23,7 @@ var options = {
     headers: headers,
 };
 
-function getResult(dataString, res){
+function getResult(dataString){
     return new Promise(result=>{
         var httpRequest = http.request(url,options,(response)=>{
             let tab =[];
@@ -32,7 +32,6 @@ function getResult(dataString, res){
             }).on('end', ()=>{
                 let data = Buffer.concat(tab)
                 let schema = JSON.parse(data)
-                res.schema = schema
                 result(schema.result)
             })
         }) 

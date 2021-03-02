@@ -188,30 +188,21 @@ router.get("/map/:height", (req, res)=>{
         var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
         const result = await getResult(dataString, res)
         txids = result.tx
-
+        
         let mapTx = []
 
         for (let i = 0; i < txids.length; i++) {
-            getTx(txids[i]).then((tx)=>{
-                let voutTx = getOuts(tx)
-                let vinTx = getIns(tx)
-    
-                Promise.all(vinTx, voutTx).then((values)=>{
-                    console.log("values", values)
-                    vinTx = values[0]
-                    voutTx =values[1]
-                    getFees(vinTx, voutTx).then((fees)=>{
-                        mapTx.push({
-                            ins: vinTx,
-                            outs: voutTx,
-                            fees : fees
-                        })  
-                        //console.log(mapTx)
-                    })
-                })
+            let tx = await getTx(txids[i])
+            let voutTx = await getOuts(tx)
+            let vinTx = await getIns(tx)
+            let fees = await getFees(vinTx, voutTx)
+            mapTx.push({
+                ins: vinTx,
+                outs: voutTx,
+                fees : fees
             })      
         }
-        
+
     	var end = new Date()
     	console.log("ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds())
         var duration  =  Math.abs(end-start)
@@ -220,7 +211,7 @@ router.get("/map/:height", (req, res)=>{
     }
     async function getTx(txid){
         dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${txid}`, true]});
-        let tx = await getResult(dataString, res)
+        let tx = await getResult(dataString)
         return tx
     }
     async function getOuts(rawtx){

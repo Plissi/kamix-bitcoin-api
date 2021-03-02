@@ -175,34 +175,43 @@ router.get("/getrawtransaction/:txid", (req, res)=>{
 //mapping function
 router.get("/map/:height", (req, res)=>{
     let txids = []
+    
     var start = new Date()
     console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())
-        var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${req.params.height}]}`;
-        getResult(dataString, res).then(result=>{
-            getBlock(result)
-        })
+    
+    var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${req.params.height}]}`;
+    getResult(dataString, res).then(result=>{
+        getBlock(result)
+    })
+    
     async function getBlock(hash){
         var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
         const result = await getResult(dataString, res)
-        result.tx.forEach(tx =>{
-            txids.push(tx)
-        })
+        txids = result.tx
+
         let mapTx = []
-        let outs = []
-        let ins = []
 
         for (let i = 0; i < txids.length; i++) {
-            let tx = await getTx(txids[i])
-            let voutTx = await getOuts(tx.vout, txids[i], result.hash)
-            let vinTx = await getIns(tx.vin)
-            outs.push(voutTx) 
-            ins.push(vinTx)          
+            getTx(txids[i]).then((tx)=>{
+                let voutTx = getOuts(tx)
+                let vinTx = getIns(tx)
+    
+                Promise.all(vinTx, voutTx).then((values)=>{
+                    console.log("values", values)
+                    vinTx = values[0]
+                    voutTx =values[1]
+                    getFees(vinTx, voutTx).then((fees)=>{
+                        mapTx.push({
+                            ins: vinTx,
+                            outs: voutTx,
+                            fees : fees
+                        })  
+                        //console.log(mapTx)
+                    })
+                })
+            })      
         }
-
-        mapTx.push({
-            ins: ins,
-            outs: outs
-        })
+        
     	var end = new Date()
     	console.log("ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds())
         var duration  =  Math.abs(end-start)
@@ -214,17 +223,18 @@ router.get("/map/:height", (req, res)=>{
         let tx = await getResult(dataString, res)
         return tx
     }
-    async function getOuts(tab, txid, blockhash){
+    async function getOuts(rawtx){
         let outs = []
+        let tab = rawtx.vout
         tab.forEach(vout => {
             if(vout.scriptPubKey.addresses !=undefined){
                 vout.scriptPubKey.addresses.forEach(addr => {
                     let txin = {
-                        txidIn: txid,
+                        txidIn: rawtx.txid,
                         addr: addr,
                         out: vout.n,
                         value: vout.value,
-                        blockhash: blockhash
+                        blockhash: rawtx.blockhash
                     }
                     outs.push(txin)
                 });
@@ -232,32 +242,47 @@ router.get("/map/:height", (req, res)=>{
         });
         return outs
     }
-    async function getIns(tab){
+    async function getIns(rawtx){
         let ins = []
+        let tab = rawtx.vin
         for (let k = 0; k < tab.length; k++) {
-            const vin = tab[k];                
-            
+            let vin = tab[k];                       
             if(vin.coinbase == undefined){
-                let txid = vin.txid
-                let tx = await getTx(txid)
-                let outs = await getOuts(tx.vout, txid, tx.blockhash)
+                let txSource = await getTx(vin.txid)
+                let outs = await getOuts(txSource)
                 outs.forEach(out => {
-                    if(out.out==vin.vout){
+                    if(out.out == vin.vout){
                         let txout = {
-                            txidOut: txid,
+                            txidOut: txSource.txid,
                             addr: out.addr,
                             in: vin.vout,
                             value: out.value,
-                            blockhash: tx.blockhash
+                            blockhash: txSource.blockhash
                         }
                         ins.push(txout)
                     }                    
                 })
             } else{
-                console.log(vin)
+                //console.log(vin)
             }
         }
         return ins
+    }
+    async function getFees(ins, outs){
+        valueIn = 0
+        valueOut = 0
+        ins.forEach(input => {
+            valueIn += input.value
+        });
+        outs.forEach(output =>{
+            valueOut += output.value
+        });
+        fees = valueIn - valueOut
+        if (fees <= 0){
+            return 0
+        } else {
+            return fees
+        }  
     }
 })
 

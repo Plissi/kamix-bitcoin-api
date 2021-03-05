@@ -10,7 +10,7 @@ const port = 8332
 var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)
 
 const headers = {
-    "content-type": "text/plain;"
+    "content-type": "application/json"
 };
 
 var options = {
@@ -22,13 +22,32 @@ function getResult(dataString){
     return new Promise(result=>{
         var httpRequest = http.request(url,options,(response)=>{
             let tab =[];
-            response.on('data', data=>{
-                tab.push(data)
-            }).on('end', ()=>{
-                let data = Buffer.concat(tab)
-                let schema = JSON.parse(data)
-                result(schema.result)
-            })
+            if(response.headers['content-type']!='application/json'){
+                //console.log("dataString", dataString);
+                //console.log(response.headers['content-type']);
+                response.on('data', data=>{
+                    //console.log('non json data', data);
+                    tab.push(data)
+                }).on('end', ()=>{
+                    //console.log('non json data tab', tab)
+                    let data = Buffer.concat(tab)
+                    //console.log('non json data concat', data)
+                    let stringData = data.toString().trim()
+                    console.log("non json data string", stringData)
+                    let schema = JSON.parse(stringData)
+                    result(schema.result)
+                })
+            }else{
+                response.on('data', data=>{
+                    tab.push(data)
+                }).on('end', ()=>{
+                    let data = Buffer.concat(tab)
+                    let stringData = data.toString().trim()
+                    let schema = JSON.parse(stringData)
+                    //console.log("String data", stringData)
+                    result(schema.result)
+                })
+            }
         }) 
     
         httpRequest.on('error', function(e) {
@@ -99,9 +118,9 @@ async function getOuts(rawtx){
         if(vout.scriptPubKey.addresses !=undefined){
             vout.scriptPubKey.addresses.forEach(addr => {
                 let txin = {
-                    txidIn: rawtx.txid,
-                    addr: addr,
-                    out: vout.n,
+                    txid: rawtx.txid,
+                    address: addr,
+                    n: vout.n,
                     value: vout.value,
                     blockhash: rawtx.blockhash
                 }
@@ -120,11 +139,11 @@ async function getIns(rawtx){
             let txSource = await getTx(vin.txid)
             let outs = await getOuts(txSource)
             outs.forEach(out => {
-                if(out.out == vin.vout){
+                if(out.n == vin.vout){
                     let txout = {
-                        txidOut: txSource.txid,
-                        addr: out.addr,
-                        in: vin.vout,
+                        txid: txSource.txid,
+                        address: out.address,
+                        n: vin.vout,
                         value: out.value,
                         blockhash: txSource.blockhash
                     }

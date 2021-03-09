@@ -3,6 +3,9 @@ const express = require("express");
 const router = express.Router();
 const http = require("http")
 const {spawn} = require('child_process')
+const mongoose = require('mongoose')
+const TransactionIn = require('../model/TransactionsIn')
+const TransactionOut = require('../model/TransactionsOut')
 
 const dotenv = require("dotenv");
 const { json } = require("body-parser");
@@ -13,6 +16,11 @@ const PASS = process.env.RPC_PASSWORD;
 const host = process.env.RPC_HOST;
 const port = 8332
 var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)
+// Database Name
+const dbName = process.env.DB_NAME;
+
+// Connection URL
+const uri = 'mongodb://localhost:27017/'+dbName;
 
 const headers = {
     "content-type": "text/plain;"
@@ -69,7 +77,7 @@ router.get("/getblockhash/:height", (req, res)=>{
 
 //get the block from its hash
 router.get("/getblock/:hash", (req, res)=>{
-    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${req.params.hash}`]});
+    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${req.params.hash}`, 2]});
     var httpRequest = http.request(url,options,(response)=>{
         let tab =[];
         response.on('data', data=>{
@@ -289,5 +297,33 @@ router.get("/python-map/:height", (req, res)=>{
         console.log(dataSent)
         res.send("<h1>Done!</h1>");
     });
+})
+
+router.get('/transaction', (req, res) =>{
+    transaction = []
+    //Connect to Database
+    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+    TransactionOut.find({txid: req.query.search}).then((tx)=>{
+        transaction.push({ins: tx})
+        TransactionIn.find({txid: req.query.search}).then((tx)=>{
+            transaction.push({outs: tx})
+            res.send(transaction)
+        })
+    })
+    
+})
+
+router.get('/address', (req, res) =>{
+    address = []
+    //Connect to Database
+    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+    TransactionOut.find({address: req.query.search}).then((addr)=>{
+        address.push({ins: addr})
+        TransactionIn.find({address: req.query.search}).then((addr)=>{
+            address.push({outs: addr})
+            res.send(address)
+        })
+    })
+    
 })
 module.exports = router;

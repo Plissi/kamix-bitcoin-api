@@ -62,4 +62,4 @@ __http://localhost:3000/api/address/?search=:addr__
 
 Returns all the entries and outputs of a transaction with a particular address in the database.
 
-**NOTE**: ':addr', ':txid', ':height' and ':hash' are parameters and should be replaced by actual an value
+**NOTE**: ':addr', ':txid', ':height' and ':hash' are parameters and should be replaced by an actual value

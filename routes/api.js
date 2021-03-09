@@ -299,6 +299,20 @@ router.get("/python-map/:height", (req, res)=>{
     });
 })
 
+router.get('/transactions', (req, res) =>{
+    transactions = []
+    //Connect to Database
+    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+    TransactionOut.find({}).then((tx)=>{
+        transactions.push({ins: tx})
+        TransactionIn.find({}).then((tx)=>{
+            transactions.push({outs: tx})
+            res.send(transactions)
+        })
+    })
+    
+})
+
 router.get('/transaction', (req, res) =>{
     transaction = []
     //Connect to Database

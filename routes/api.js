@@ -4,6 +4,7 @@ const router = express.Router();
 const http = require("http")
 const {spawn} = require('child_process')
 const mongoose = require('mongoose')
+const _ = require('lodash')
 const TransactionIn = require('../model/TransactionsIn')
 const TransactionOut = require('../model/TransactionsOut')
 
@@ -20,7 +21,7 @@ var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)
 const dbName = process.env.DB_NAME;
 
 // Connection URL
-const uri = 'mongodb://localhost:27017/'+dbName;
+const uri = `mongodb://localhost:27017/`+dbName;
 
 const headers = {
     "content-type": "text/plain;"
@@ -299,18 +300,69 @@ router.get("/python-map/:height", (req, res)=>{
     });
 })
 
-router.get('/transactions', (req, res) =>{
+async function call(){
+    txout = await TransactionOut.distinct('txid');
+    txin = await TransactionIn.distinct('txid');
+    txids = await _.union(txin, txout);
+    return txids
+}
+function looping(txids, res){
     transactions = []
-    //Connect to Database
-    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
-    TransactionOut.find({}).then((tx)=>{
-        transactions.push({ins: tx})
-        TransactionIn.find({}).then((tx)=>{
-            transactions.push({outs: tx})
-            res.send(transactions)
+    count= 1
+    txids.forEach(txid=>{
+        txout = TransactionOut.find({'txid': txid})
+        txin = TransactionIn.find({'txid': txid})
+        
+        Promise.all([txout, txin]).then(values=>{
+            console.log(txids.indexOf(txid))
+            valueIns = 0;
+            valueOuts = 0;
+
+            values[0].forEach(element => {
+                valueIns += element.value
+            });
+            //console.log('i',valueIns);
+
+            values[1].forEach(element => {
+                valueOuts += element.value
+            });
+            //console.log('o',valueOuts)
+
+            fee = valueOuts - valueIns
+            console.log('i',valueIns,'o',valueOuts,'f',fee)
+
+            let data={}
+                if (fee>0){
+                    data = {
+                        'txid': txid,
+                        'value': valueIns,
+                        'fee': fee
+                    }
+                }else{
+                    data = {
+                        'txid': txid,
+                        'value': valueIns,
+                        'fee': 0
+                    }
+                }
+    
+                transactions.push(data)
+    
+                if (count++ == txids.length){
+                    console.log('ok')
+                    res.send(transactions);
+                }
         })
     })
-    
+};
+router.get('/transactions', (req, res) =>{
+    //Connect to Database
+    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+
+    call().then((txids)=>{
+        looping(txids, res)        
+    })
+  
 })
 
 router.get('/transaction', (req, res) =>{

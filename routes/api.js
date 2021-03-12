@@ -306,61 +306,82 @@ async function call(){
     txids = await _.union(txin, txout);
     return txids
 }
-function looping(txids, res){
+function looping(txids, page, perPage, res){
     transactions = []
+    limitedTxids = []
     count= 1
-    txids.forEach(txid=>{
-        txout = TransactionOut.find({'txid': txid})
+    skip = perPage * page - perPage
+    limit = perPage * page
+    for (i = skip; i<limit; i++){
+        limitedTxids.push(txids[i])
+    }
+    limitedTxids.forEach(txid=>{
+        txout = TransactionOut.find({'txid': txid})    
         txin = TransactionIn.find({'txid': txid})
         
         Promise.all([txout, txin]).then(values=>{
-            console.log(txids.indexOf(txid))
+            console.log('values', values)
             valueIns = 0;
             valueOuts = 0;
+            pages = txids.length / perPage
 
             values[0].forEach(element => {
-                valueIns += element.value
-            });
-            //console.log('i',valueIns);
-
-            values[1].forEach(element => {
                 valueOuts += element.value
             });
-            //console.log('o',valueOuts)
 
-            fee = valueOuts - valueIns
-            console.log('i',valueIns,'o',valueOuts,'f',fee)
+            values[1].forEach(element => {
+                valueIns += element.value
+            });
 
+            fee = getFees(values[0], values[1])
+            
             let data={}
-                if (fee>0){
-                    data = {
-                        'txid': txid,
-                        'value': valueIns,
-                        'fee': fee
-                    }
-                }else{
-                    data = {
-                        'txid': txid,
-                        'value': valueIns,
-                        'fee': 0
-                    }
+            if (fee>0){
+                data = {
+                    'txid': txid,
+                    'value': valueIns,
+                    'fee': fee
                 }
-    
-                transactions.push(data)
-    
-                if (count++ == txids.length){
-                    console.log('ok')
-                    res.send(transactions);
+            }else{
+                data = {
+                    'txid': txid,
+                    'value': valueIns,
+                    'fee': 0
                 }
+            }
+
+            transactions.push(data)
+            if (count++ == perPage){
+                res.send(transactions);
+            }
         })
     })
 };
+function getFees(ins, outs){
+    valueIn = 0
+    valueOut = 0
+    ins.forEach(input => {
+        valueIn += input.value
+    });
+    outs.forEach(output =>{
+        valueOut += output.value
+    });
+    fees = valueIn - valueOut
+    console.log('i',valueIn,'o',valueOut,'f',fees)
+    if (fees <= 0){
+        return 0
+    } else {
+        return fees
+    }  
+}
 router.get('/transactions', (req, res) =>{
+    page = Math.max(0, req.query.page)
+    perPage = Math.max(0, req.query.limit)
     //Connect to Database
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 
     call().then((txids)=>{
-        looping(txids, res)        
+        looping(txids, page, perPage, res)        
     })
   
 })
@@ -370,9 +391,9 @@ router.get('/transaction', (req, res) =>{
     //Connect to Database
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
     TransactionOut.find({txid: req.query.search}).then((tx)=>{
-        transaction.push({ins: tx})
+        transaction.push({outs: tx})
         TransactionIn.find({txid: req.query.search}).then((tx)=>{
-            transaction.push({outs: tx})
+            transaction.push({ins: tx})
             res.send(transaction)
         })
     })
@@ -384,9 +405,9 @@ router.get('/address', (req, res) =>{
     //Connect to Database
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
     TransactionOut.find({address: req.query.search}).then((addr)=>{
-        address.push({ins: addr})
+        address.push({outs: addr})
         TransactionIn.find({address: req.query.search}).then((addr)=>{
-            address.push({outs: addr})
+            address.push({ins: addr})
             res.send(address)
         })
     })

@@ -51,9 +51,9 @@ __http://localhost:3000/api/python-map/:height__
 
 Returns a map of inputs and outputs of a block from python script.
 
-__http://localhost:3000/api/transactions__
+__http://localhost:3000/api/transactions?page=p&limit=l__
 
-Returns all the entries and outputs of all the transactions in the database.
+Returns page number *p* with *l* transactions present in the database. (Replace *p* and *l* by the page number and the number of element to display)
 
 __http://localhost:3000/api/transaction/?search=:txid__
 

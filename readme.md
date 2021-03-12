@@ -10,6 +10,7 @@ This is an API created to retrieve some data from a bitcoin core full node
 * RPC_USER=yourUser
 * RPC_PASSWORD=yourPassword
 * RPC_HOST=yourHostIPAddress
+* DB_NAME=yourDataBase
 
 ## Usage
 

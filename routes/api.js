@@ -375,8 +375,8 @@ function getFees(ins, outs){
     }  
 }
 router.get('/transactions', (req, res) =>{
-    page = Math.max(0, req.query.page)
-    perPage = Math.max(0, req.query.limit)
+    page = Math.max(1, req.query.page)
+    perPage = Math.max(1, req.query.limit)
     //Connect to Database
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 

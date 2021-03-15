@@ -6,6 +6,8 @@ const { exit } = require('process');
 const mongoose = require('mongoose');
 const TransactionIn = require('./model/TransactionsIn')
 const TransactionOut = require('./model/TransactionsOut')
+const Check = require('./model/CheckBlock')
+const check = require('./check_worker')
 
 dotenv.config();
 
@@ -74,31 +76,37 @@ function useWorker(path, height){
 }
 */
 
-async function insertion(result, outsCollection, insCollection){
-    ins = []
-    outs = []
-    for (i = 0; i<result.length; i++){
+
+async function insertion(result){
+    for (let i = 0; i<result.length; i++){
         result[i].ins.forEach(async inElement => {
-            find = await insCollection.find(inElement).countDocuments()
+            find = await TransactionIn.find(inElement).countDocuments()
             
             if (inElement.length != 0 && find == 0){
                 try {
-                    await insCollection.create(inElement)
+                    await TransactionIn.create(inElement)
                 } catch (error) {
-                    console.log(error)
+                    try {
+                        await TransactionIn.create(inElement)
+                    } catch (e) {
+                        console.log(e)
+                    }
                 }
             }
         });
         
         result[i].outs.forEach(async outElement => {
-            find = await outsCollection.find(outElement).countDocuments()
+            find = await TransactionOut.find(outElement).countDocuments()
             if(outElement.length != 0 && find == 0){
                 try {
-                    await outsCollection.create(outElement)
+                    await TransactionOut.create(outElement)
                 } catch (error) {
-                    console.log(error)
+                    try {
+                        await TransactionOut.create(outElement)
+                    } catch (e) {
+                        console.log(e)
+                    } 
                 } 
-               outs.push(outElement)
             }
        });
     }
@@ -117,8 +125,8 @@ async function main(){
 
     //Retrieve Blockcount
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
-    const blockcount = await getResult(dataString);
-    //const blockcount =100200
+    //const blockcount = await getResult(dataString);
+    const blockcount =100200
 
     let finished = 0;
     for (let i = blockcount; i > blockcount-200; i--) {
@@ -132,16 +140,20 @@ async function main(){
                             if (err) throw err;
                         });
                     }else{
-                        insertion(result, TransactionIn, TransactionOut).then((err)=>{
-                            if (err) throw err
+                        check(i, err).then(()=>{
+                            insertion(result).then((err)=>{
+                                if (err) throw err
+                            })
                         })
                     }
                 })
             }else{
-                insertion(result, TransactionIn, TransactionOut).then((err)=>{
-                   
-                    if (err) throw err
-                    else  console.log('ok', i)
+                check(i, err).then(()=>{
+                    insertion(result).then((err)=>{
+                    
+                        if (err) throw err
+                        else  console.log('ok', i)
+                    })
                 })
             }
 

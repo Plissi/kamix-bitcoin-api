@@ -167,6 +167,7 @@ router.get("/getrawtransaction/:txid", (req, res)=>{
         }).on('end', ()=>{
             let data = Buffer.concat(tab)
             let schema = JSON.parse(data)
+            schema.result.blocktime *=1000
             res.send(schema)
             console.log("end")
         })
@@ -188,7 +189,7 @@ router.get("/map/:height", (req, res)=>{
     console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())
     
     var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${req.params.height}]}`;
-    getResult(dataString, res).then(result=>{
+    getResult(dataString).then(result=>{
         getBlock(result)
     })
     
@@ -267,22 +268,6 @@ router.get("/map/:height", (req, res)=>{
         }
         return ins
     }
-    async function getFees(ins, outs){
-        valueIn = 0
-        valueOut = 0
-        ins.forEach(input => {
-            valueIn += input.value
-        });
-        outs.forEach(output =>{
-            valueOut += output.value
-        });
-        fees = valueIn - valueOut
-        if (fees <= 0){
-            return 0
-        } else {
-            return fees
-        }  
-    }
 })
 
 router.get("/python-map/:height", (req, res)=>{
@@ -301,82 +286,62 @@ router.get("/python-map/:height", (req, res)=>{
 })
 
 async function call(){
-    txout = await TransactionOut.distinct('txid');
-    txin = await TransactionIn.distinct('txid');
-    txids = await _.union(txin, txout);
+    let txout = await TransactionOut.distinct('txid');
+    let txin = await TransactionIn.distinct('txid');
+    let txids = await _.union(txin, txout);
     return txids
 }
 function looping(txids, page, perPage, res){
-    transactions = []
-    limitedTxids = []
-    count= 1
-    skip = perPage * page - perPage
-    limit = perPage * page
-    for (i = skip; i<limit; i++){
+    let transactions = []
+    let limitedTxids = []
+    let count= 1
+    let skip = perPage * page - perPage
+    let limit = perPage * page
+    for (var i = skip; i<limit; i++){
         limitedTxids.push(txids[i])
     }
     limitedTxids.forEach(txid=>{
-        txout = TransactionOut.find({'txid': txid})    
-        txin = TransactionIn.find({'txid': txid})
+        let txout = TransactionOut.find({'txid': txid})    
+        let txin = TransactionIn.find({'txid': txid})
         
         Promise.all([txout, txin]).then(values=>{
-            console.log('values', values)
-            valueIns = 0;
-            valueOuts = 0;
-            pages = txids.length / perPage
-
-            values[0].forEach(element => {
-                valueOuts += element.value
-            });
-
-            values[1].forEach(element => {
-                valueIns += element.value
-            });
-
-            fee = getFees(values[0], values[1])
-            
+            //let pages = txids.length / perPage
+            let fee = getFees(values[0], values[1])[0];
+            let valueIn = getFees(values[0], values[1])[2];
+            //let valueOuts = getFees(values[0], values[1])[2];
             let data={}
-            if (fee>0){
-                data = {
-                    'txid': txid,
-                    'value': valueIns,
-                    'fee': fee
-                }
-            }else{
-                data = {
-                    'txid': txid,
-                    'value': valueIns,
-                    'fee': 0
-                }
+            data = {
+                'txid': txid,
+                'value': valueIn,
+                'fee': fee
             }
-
+            //console.log('fee', fee, 'i', valueIns, 'o', valueOuts)
             transactions.push(data)
             if (count++ == perPage){
                 res.send(transactions);
             }
         })
     })
-};
-function getFees(ins, outs){
-    valueIn = 0
-    valueOut = 0
-    ins.forEach(input => {
+}
+function getFees(inputs, outputs){
+    let valueIn = 0
+    let valueOut = 0
+    inputs.forEach(input => {
         valueIn += input.value
     });
-    outs.forEach(output =>{
+    outputs.forEach(output =>{
         valueOut += output.value
     });
-    fees = valueIn - valueOut
-    console.log('i',valueIn,'o',valueOut,'f',fees)
+    let fees = valueIn - valueOut
     if (fees <= 0){
-        return 0
+        return [0, valueIn, valueOut]
     } else {
-        return fees
+        return [fees, valueIn, valueOut]
     }  
 }
 router.get('/transactions', (req, res) =>{
-    page = Math.max(1, req.query.page)
-    perPage = Math.max(1, req.query.limit)
+    let page = Math.max(1, req.query.page)
+    let perPage = Math.max(1, req.query.limit)
     //Connect to Database
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 
@@ -387,7 +352,7 @@ router.get('/transactions', (req, res) =>{
 })
 
 router.get('/transaction', (req, res) =>{
-    transaction = []
+    let transaction = []
     //Connect to Database
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
     TransactionOut.find({txid: req.query.search}).then((tx)=>{
@@ -401,7 +366,7 @@ router.get('/transaction', (req, res) =>{
 })
 
 router.get('/address', (req, res) =>{
-    address = []
+    let address = []
     //Connect to Database
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
     TransactionOut.find({address: req.query.search}).then((addr)=>{

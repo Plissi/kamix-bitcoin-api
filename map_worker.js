@@ -1,13 +1,18 @@
 const http = require("http")
 const {parentPort} = require('worker_threads')
-const dotenv = require("dotenv");
-dotenv.config();
+const check = require('./check_worker')
+const decrypt = require('./decrypt')
+const mongoose = require('mongoose');
+require("dotenv").config();
 
 const USER = process.env.RPC_USER;
 const PASS = process.env.RPC_PASSWORD;
 const host = process.env.RPC_HOST;
 const port = 8332
-var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)
+var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)// Database Name
+const dbName = process.env.DB_NAME;
+// Connection URL
+const uri = 'mongodb://localhost:27017/'+dbName;
 
 const headers = {
     "content-type": "application/json"
@@ -60,25 +65,24 @@ function getResult(dataString){
 }
 
 let height
-parentPort.on('message', (message)=>{    
-    height = message
-    
-    var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${height}]}`;
-    
-    getResult(dataString).then(result=>{
-        getBlock(result)
-    })
+parentPort.on('message', (message)=>{  
+    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}) .then(()=>{
+        height = message
+        console.log(height)
+        check(height).then((present)=>{
+            if (!present){
+                var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${height}]}`;
+            
+                getResult(dataString).then(result=>{
+                    getBlock(result)
+                })
+            }
+        })
+    }) 
 })
-
-
-
 
 async function getBlock(hash){
     let txids = []
-
-    /*var start = new Date()
-    console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())*/
-
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
     const result = await getResult(dataString)
     txids = result.tx
@@ -89,25 +93,15 @@ async function getBlock(hash){
         let tx = await getTx(txids[i])
         let voutTx = await getOuts(tx)
         let vinTx = await getIns(tx)
-        let fees = await getFees(vinTx, voutTx)
         mapTx.push({
-            ins: vinTx,
-            outs: voutTx,
-            fees : fees
-        })        
-    }
-
-    /*var end = new Date()
-    console.log("ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds())
-
-    var duration  =  Math.abs(end-start)
-    console.log("duration: "+duration+"ms")*/
-
-    //console.log(JSON.stringify(mapTx,null,4))
+            ins: voutTx,
+            outs: vinTx
+        })
+    }        
     parentPort.postMessage(mapTx)
 }
 async function getTx(txid){
-    dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${txid}`, true]});
+    let dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${txid}`, true]});
     let tx = await getResult(dataString)
     return tx
 }
@@ -115,7 +109,7 @@ async function getOuts(rawtx){
     let outs = []
     let tab = rawtx.vout
     tab.forEach(vout => {
-        if(vout.scriptPubKey.addresses !=undefined){
+        if(vout.scriptPubKey.addresses != undefined){
             vout.scriptPubKey.addresses.forEach(addr => {
                 let txin = {
                     txid: rawtx.txid,
@@ -126,6 +120,16 @@ async function getOuts(rawtx){
                 }
                 outs.push(txin)
             });
+        }else{
+            let txin = {
+                txid: rawtx.txid,
+                address: decrypt(vout),
+                n: vout.n,
+                value: vout.value,
+                blockhash: rawtx.blockhash
+            }
+            console.log('decrypted', rawtx.txid)
+            outs.push(txin)
         }
     });
     return outs
@@ -141,34 +145,34 @@ async function getIns(rawtx){
             outs.forEach(out => {
                 if(out.n == vin.vout){
                     let txout = {
-                        txid: txSource.txid,
+                        txid: rawtx.txid,
                         address: out.address,
                         n: vin.vout,
                         value: out.value,
-                        blockhash: txSource.blockhash
+                        blockhash: rawtx.blockhash
                     }
                     ins.push(txout)
                 }                    
             })
         } else{
-            //console.log(vin)
+            getOuts(rawtx).then(outs=>{
+                let value = 0
+                outs.forEach(out => {
+                    value += out.value                 
+                })
+    
+                let txout = {
+                    txid: rawtx.txid,
+                    script: vin.coinbase,
+                    n: vin.vout,
+                    value: value,
+                    blockhash: rawtx.blockhash,
+                    coinbase: true
+                }
+                console.log('coinbase', rawtx.txid)
+                ins.push(txout)
+            })
         }
     }
     return ins
-}
-async function getFees(ins, outs){
-    valueIn = 0
-    valueOut = 0
-    ins.forEach(input => {
-        valueIn += input.value
-    });
-    outs.forEach(output =>{
-        valueOut += output.value
-    });
-    fees = valueIn - valueOut
-    if (fees <= 0){
-        return 0
-    } else {
-        return fees
-    }  
 }

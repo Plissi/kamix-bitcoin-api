@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema
 
-TransactionSchema = new Schema({
+let TransactionSchema = new Schema({
     id: false,
     txid: {type: String},        //transactions id
     address :{type: String},    //destination address
@@ -10,7 +10,7 @@ TransactionSchema = new Schema({
     value: {type: Number} ,      //outgoing value,        
     blockhash :{type: String}      //blockhash
 }, {
-    collection: 'ins'
+    collection: 'txin'
 })
 
 module.exports = mongoose.model("TransactionIn", TransactionSchema)

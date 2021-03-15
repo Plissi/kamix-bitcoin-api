@@ -23,6 +23,10 @@ const mongoose = require('mongoose');
 var helmet = require("helmet");
 const rpcMethods = require("./routes/api");
 const app = express();
+// Database Name
+const dbName = process.env.DB_NAME;
+// Connection URL
+const uri = `mongodb://localhost:27017/`+dbName;
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,58 +1,8 @@
-
 const express = require("express");
 const router = express.Router();
 const http = require("http")
 const {spawn} = require('child_process')
-const mongoose = require('mongoose')
-const _ = require('lodash')
-const TransactionIn = require('../model/TransactionsIn')
-const TransactionOut = require('../model/TransactionsOut')
-
-const dotenv = require("dotenv");
-const { json } = require("body-parser");
-dotenv.config();
-
-const USER = process.env.RPC_USER;
-const PASS = process.env.RPC_PASSWORD;
-const host = process.env.RPC_HOST;
-const port = 8332
-var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)
-// Database Name
-const dbName = process.env.DB_NAME;
-
-// Connection URL
-const uri = `mongodb://localhost:27017/`+dbName;
-
-const headers = {
-    "content-type": "text/plain;"
-};
-
-var options = {
-    method: "POST",
-    headers: headers,
-};
-
-function getResult(dataString){
-    return new Promise(result=>{
-        var httpRequest = http.request(url,options,(response)=>{
-            let tab =[];
-            response.on('data', data=>{
-                tab.push(data)
-            }).on('end', ()=>{
-                let data = Buffer.concat(tab)
-                let schema = JSON.parse(data)
-                result(schema.result)
-            })
-        }) 
-    
-        httpRequest.on('error', function(e) {
-            console.log('problem with request: ' + e.message);
-          });
-    
-        httpRequest.write(dataString)
-        httpRequest.end()
-    })
-}
+const {url, options, getResult} = require('../rpc_config')
 
 router.get("/", (req, res)=>{
     res.send("<h1>It works!</h1>")
@@ -134,49 +84,6 @@ router.get("/getblockchaininfo", (req, res)=>{
     httpRequest.on('error', function(e) {
         console.log('problem with request: ' + e.message);
       });
-    httpRequest.write(dataString)
-    httpRequest.end()
-})
-
-//list the latest transactions
-router.get("/listtransactions", (req, res)=>{
-    var dataString = "{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"listtransactions\",\"params\":[]}";
-    var httpRequest = http.request(url,options,(response)=>{
-        response.on('data', data=>{
-            var receivedResult = JSON.parse(data)
-            res.send(receivedResult)
-        })
-    }) 
-
-    httpRequest.on('error', function(e) {
-        console.log('problem with request: ' + e.message);
-      });
-
-    httpRequest.write(dataString)
-    httpRequest.end()
-})
-
-//get information about a rawtransaction from the transaction id
-router.get("/getrawtransaction/:txid", (req, res)=>{
-    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${req.params.txid}`, true]});
-    var httpRequest = http.request(url,options,(response)=>{
-        let tab =[];
-        response.on('data', data=>{
-            console.log("start")
-            tab.push(data)
-        }).on('end', ()=>{
-            let data = Buffer.concat(tab)
-            let schema = JSON.parse(data)
-            schema.result.blocktime *=1000
-            res.send(schema)
-            console.log("end")
-        })
-    }) 
-
-    httpRequest.on('error', function(e) {
-        console.log('problem with request: ' + e.message);
-      });
-
     httpRequest.write(dataString)
     httpRequest.end()
 })
@@ -285,97 +192,4 @@ router.get("/python-map/:height", (req, res)=>{
     });
 })
 
-async function call(){
-    let txout = await TransactionOut.distinct('txid');
-    let txin = await TransactionIn.distinct('txid');
-    let txids = await _.union(txin, txout);
-    return txids
-}
-function looping(txids, page, perPage, res){
-    let transactions = []
-    let limitedTxids = []
-    let count= 1
-    let skip = perPage * page - perPage
-    let limit = perPage * page
-    for (var i = skip; i<limit; i++){
-        limitedTxids.push(txids[i])
-    }
-    limitedTxids.forEach(txid=>{
-        let txout = TransactionOut.find({'txid': txid})    
-        let txin = TransactionIn.find({'txid': txid})
-        
-        Promise.all([txout, txin]).then(values=>{
-            //let pages = txids.length / perPage
-            let fee = getFees(values[0], values[1])[0];
-            let valueIn = getFees(values[0], values[1])[2];
-            //let valueOuts = getFees(values[0], values[1])[2];
-            let data={}
-            data = {
-                'txid': txid,
-                'value': valueIn,
-                'fee': fee
-            }
-            //console.log('fee', fee, 'i', valueIns, 'o', valueOuts)
-            transactions.push(data)
-            if (count++ == perPage){
-                res.send(transactions);
-            }
-        })
-    })
-}
-function getFees(inputs, outputs){
-    let valueIn = 0
-    let valueOut = 0
-    inputs.forEach(input => {
-        valueIn += input.value
-    });
-    outputs.forEach(output =>{
-        valueOut += output.value
-    });
-    let fees = valueIn - valueOut
-    if (fees <= 0){
-        return [0, valueIn, valueOut]
-    } else {
-        return [fees, valueIn, valueOut]
-    }  
-}
-router.get('/transactions', (req, res) =>{
-    let page = Math.max(1, req.query.page)
-    let perPage = Math.max(1, req.query.limit)
-    //Connect to Database
-    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
-
-    call().then((txids)=>{
-        looping(txids, page, perPage, res)        
-    })
-  
-})
-
-router.get('/transaction', (req, res) =>{
-    let transaction = []
-    //Connect to Database
-    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
-    TransactionOut.find({txid: req.query.search}).then((tx)=>{
-        transaction.push({outs: tx})
-        TransactionIn.find({txid: req.query.search}).then((tx)=>{
-            transaction.push({ins: tx})
-            res.send(transaction)
-        })
-    })
-    
-})
-
-router.get('/address', (req, res) =>{
-    let address = []
-    //Connect to Database
-    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
-    TransactionOut.find({address: req.query.search}).then((addr)=>{
-        address.push({outs: addr})
-        TransactionIn.find({address: req.query.search}).then((addr)=>{
-            address.push({ins: addr})
-            res.send(address)
-        })
-    })
-    
-})
 module.exports = router;

@@ -4,9 +4,19 @@ const {getResult} = require('../rpc_config')
 const _ = require('lodash')
 
 async function call(){
-    let txout = await TransactionOut.distinct('txid');
-    let txin = await TransactionIn.distinct('txid');
-    let txids = await _.union(txin, txout);
+    //let txout = await TransactionOut.distinct('txid');
+    let txs = await TransactionIn.aggregate([
+        { $project: { txid: 1, blocktime:1, _id: 0 } },
+        { $unionWith: { coll: "txout", pipeline: [ { $project: { txid: 1, blocktime:1, _id: 0 } } ]} },
+        { $group : { _id : "$txid", time : {$push: "$blocktime"} } },
+        { $sort : { time : -1 } }
+    ]);
+    let txids = [];
+    txs.forEach(tx=>{
+        txids.push(tx._id)
+        //console.log(tx._id, tx.time[0])
+    })
+    
     return txids
 }
 

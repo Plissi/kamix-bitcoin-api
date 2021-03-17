@@ -18,20 +18,20 @@ module.exports = app*/
   * NEW
   */
 const express = require('express');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 var helmet = require("helmet");
 const rpcMethods = require("./routes/api");
-const tx = require('./routes/transaction')
+const tx = require('./routes/transaction');
+const block = require('./routes/block')
 const app = express();
+require("dotenv").config();
 
 // Connection URL
-const dbName = process.env.DB_NAME;
-const uri = `mongodb://localhost:27017/`+dbName;
+const uri = process.env.DB_URI;
 
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connexion à MongoDB réussie !'))
-    .catch(() => console.log('Connexion à MongoDB échouée !'));
+    .catch((err) => console.log('Connexion à MongoDB échouée !', err));
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -42,10 +42,9 @@ app.use((req, res, next) => {
 
 app.use(helmet())
 
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
+app.use(express.urlencoded({extended: false}));
+app.use(express.json());
 
-app.use("/api", rpcMethods);
-app.use("/api/tx", tx)
+app.use("/api", [rpcMethods, tx, block]);
 
 module.exports = app;

@@ -10,6 +10,7 @@ let TransactionSchema = new Schema({
     n: {type: Number},          //input number
     value: {type: Number} ,     //incoming value
     blockhash :{type: String},  //blockhash  
+    blocktime :{type: Number},  //blocktime  
     coinbase:{
         type: Boolean,
         default: false

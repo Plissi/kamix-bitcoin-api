@@ -1,81 +1,13 @@
-const WorkerPool = require('./worker_pool')
-const http = require("http")
-const dotenv = require("dotenv");
+const WorkerPool = require('./workers/worker_pool')
 const fs = require('fs')
 const { exit } = require('process');
 const mongoose = require('mongoose');
 const TransactionIn = require('./model/TransactionsIn')
 const TransactionOut = require('./model/TransactionsOut')
-const Check = require('./model/CheckBlock')
-const check = require('./check_worker')
+const check = require('./workers/check_worker')
+const {getResult} = require('./rpc_config')
 
-dotenv.config();
-
-const USER = process.env.RPC_USER;
-const PASS = process.env.RPC_PASSWORD;
-const host = process.env.RPC_HOST;
-const port = 8332
-var url = new URL(`http:${USER}:${PASS}@${host}:${port}/`)
-// Database Name
-const dbName = process.env.DB_NAME;
-
-// Connection URL
-const uri = 'mongodb://localhost:27017/'+dbName;
-
-const headers = {
-    "content-type": "text/plain;"
-};
-
-var options = {
-    method: "POST",
-    headers: headers,
-};
-
-function getResult(dataString){
-    return new Promise(result=>{
-        var httpRequest = http.request(url,options,(response)=>{
-            let tab =[];
-            response.on('data', data=>{
-                tab.push(data)
-            }).on('end', ()=>{
-                let data = Buffer.concat(tab)
-                let schema = JSON.parse(data)
-                result(schema.result)
-            })
-        }) 
-    
-        httpRequest.on('error', function(e) {
-            console.log('problem with request: ' + e.message);
-          });
-    
-        httpRequest.write(dataString)
-        httpRequest.end()
-    })
-}
-
-/*
-function useWorker(path, height){
-    return new Promise((resolve, reject)=>{
-        const worker = new Worker(path, {workerData : height})
-        worker.on('online', ()=>{
-            console.log("Block "+height+" started")
-        })
-        worker.on('message', messageReceived=>{
-            console.log(messageReceived)
-            return resolve
-        })
-        worker.on('error', reject)
-        worker.on('exit', code=>{
-            if(code!=0){
-                reject(new Error(`Worker stopped with exit code ${code}`))
-            }else{
-                console.log("Block "+height+" ended")
-            }
-        })
-    })
-}
-*/
-
+const uri = process.env.DB_URI;
 
 async function insertion(result){
     for (let i = 0; i<result.length; i++){
@@ -89,7 +21,9 @@ async function insertion(result){
                     try {
                         await TransactionIn.create(inElement)
                     } catch (e) {
-                        console.log(e)
+                        fs.appendFile('./logs/insertion.log', e+'\n', 'utf8', (err) => {
+                            if (err) throw err;
+                        });
                     }
                 }
             }
@@ -104,7 +38,9 @@ async function insertion(result){
                     try {
                         await TransactionOut.create(outElement)
                     } catch (e) {
-                        console.log(e)
+                        fs.appendFile('./logs/insertion.log', e+'\n', 'utf8', (err) => {
+                            if (err) throw err;
+                        });
                     } 
                 } 
             }
@@ -113,60 +49,75 @@ async function insertion(result){
 }
 
 async function main(){
-    //await useWorker('./map_worker.js')
     //Connect to Database
-    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+    await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 
     //Create worker pools
     const pool = new WorkerPool(100);
 
     var start = new Date()
-    console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())
+    const startStr = "started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds()
+    fs.appendFile('./logs/exec.log', startStr+'\n', 'utf8', (error) => {
+        if (error) throw error;
+    });
 
     //Retrieve Blockcount
-    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
+    //var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
     //const blockcount = await getResult(dataString);
-    const blockcount =100200
+    const blockcount = 101000;
+    const nblocks = 1000;
 
     let finished = 0;
-    for (let i = blockcount; i > blockcount-200; i--) {
 
+    for (let i = blockcount; i > blockcount-nblocks; i--) {
         pool.runTask(i, (err, result) => {            
             if (err){
-                pool.runTask(i, (err, result)=>{
-                    if (err){
-                        console.log(i, err);
-                        fs.appendFile('error.log', i.toString()+'\n', 'utf8', (err) => {
-                            if (err) throw err;
-                        });
+                pool.runTask(i, (e, r)=>{
+                    if (e){
+                        check(i, e).then(()=>{
+                            fs.appendFile('./logs/error.log', i.toString()+'\n', 'utf8', (error) => {
+                                if (error) throw error;
+                            });
+                        })
                     }else{
-                        check(i, err).then(()=>{
-                            insertion(result).then((err)=>{
-                                if (err) throw err
+                        check(i).then(()=>{
+                            insertion(result).then((e)=>{
+                                if (e) throw e
                             })
                         })
                     }
                 })
             }else{
-                check(i, err).then(()=>{
-                    insertion(result).then((err)=>{
-                    
-                        if (err) throw err
+                check(i).then(()=>{
+                    insertion(result).then((e)=>{
+                        if (e) throw e
                         else  console.log('ok', i)
                     })
                 })
             }
 
-            if (++finished === 200){
-                var end = new Date()
-                console.log("ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds())
+            var current = new Date()
+            const finishedStr = finished+" "+current.getHours()+":"+current.getMinutes()+":"+current.getSeconds()
 
-                var duration  =  Math.abs(end-start)
-                console.log("duration: "+duration+"ms")
-                pool.close();
-                exit()
+            fs.appendFile('./logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
+                if (error) throw error;
+            });
+
+            if (++finished === nblocks){
+                console.log('finished')
+                var end = new Date()
+                const endStr = "ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds()
+                fs.appendFile('./logs/exec.log', endStr+'\n', 'utf8', (error) => {
+                    if (error) throw error;
+                    var duration  =  Math.abs(end-start)
+                    const durationStr = "duration: "+duration+"ms"
+                    fs.appendFile('./logs/exec.log', durationStr+'\n', 'utf8', (e) => {
+                        if (e) throw e;
+                        pool.close();
+                        exit()
+                    });
+                });
             }
-            
         });
     }
 }

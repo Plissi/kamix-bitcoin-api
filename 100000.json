@@ -1,0 +1,84 @@
+[
+    {
+        "ins": [],
+        "outs": [],
+        "fees": 0
+    },
+    {
+        "ins": [
+            {
+                "txidOut": "fff2525b8931402dd09222c50775608f75787bd2b87e56995a7bdd30f79702c4",
+                "addr": "1BNwxHGaFbeUBitpjy2AsKpJ29Ybxntqvb",
+                "in": 0,
+                "value": 50.00000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            }
+        ],
+        "outs": [
+            {
+                "txidIn": "fff2525b8931402dd09222c50775608f75787bd2b87e56995a7bdd30f79702c4",
+                "addr": "1JqDybm2nWTENrHvMyafbSXXtTk5Uv5QAn",
+                "out": 0,
+                "value": 5.56000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            },
+            {
+                "txidIn": "fff2525b8931402dd09222c50775608f75787bd2b87e56995a7bdd30f79702c4",
+                "addr": "1EYTGtG4LnFfiMvjJdsU7GMGCQvsRSjYhx",
+                "out": 1,
+                "value": 44.44000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            }
+        ],
+        "fees": 0E-8
+    },
+    {
+        "ins": [
+            {
+                "txidOut": "6359f0868171b1d194cbee1af2f16ea598ae8fad666d9b012c8ed2b79a236ec4",
+                "addr": "15vScfMHNrXN4QvWe54q5hwfVoYwG79CS1",
+                "in": 1,
+                "value": 3.00000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            }
+        ],
+        "outs": [
+            {
+                "txidIn": "6359f0868171b1d194cbee1af2f16ea598ae8fad666d9b012c8ed2b79a236ec4",
+                "addr": "1H8ANdafjpqYntniT3Ddxh4xPBMCSz33pj",
+                "out": 0,
+                "value": 0.01000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            },
+            {
+                "txidIn": "6359f0868171b1d194cbee1af2f16ea598ae8fad666d9b012c8ed2b79a236ec4",
+                "addr": "1Am9UTGfdnxabvcywYG2hvzr6qK8T3oUZT",
+                "out": 1,
+                "value": 2.99000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            }
+        ],
+        "fees": 0E-8
+    },
+    {
+        "ins": [
+            {
+                "txidOut": "e9a66845e05d5abc0ad04ec80f774a7e585c6e8db975962d069a522137b80c1d",
+                "addr": "1JxDJCyWNakZ5kECKdCU9Zka6mh34mZ7B2",
+                "in": 0,
+                "value": 0.01000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            }
+        ],
+        "outs": [
+            {
+                "txidIn": "e9a66845e05d5abc0ad04ec80f774a7e585c6e8db975962d069a522137b80c1d",
+                "addr": "16FuTPaeRSPVxxCnwQmdyx2PQWxX6HWzhQ",
+                "out": 0,
+                "value": 0.01000000,
+                "blockhash": "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"
+            }
+        ],
+        "fees": 0E-8
+    }
+]

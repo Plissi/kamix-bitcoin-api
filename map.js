@@ -21,7 +21,7 @@ async function insertion(result){
                     try {
                         await TransactionIn.create(inElement)
                     } catch (e) {
-                        fs.appendFile('./logs/insertion.log', e+'\n', 'utf8', (err) => {
+                        fs.appendFile('logs/insertion.log', e+'\n', 'utf8', (err) => {
                             if (err) throw err;
                         });
                     }
@@ -38,7 +38,7 @@ async function insertion(result){
                     try {
                         await TransactionOut.create(outElement)
                     } catch (e) {
-                        fs.appendFile('./logs/insertion.log', e+'\n', 'utf8', (err) => {
+                        fs.appendFile('logs/insertion.log', e+'\n', 'utf8', (err) => {
                             if (err) throw err;
                         });
                     } 
@@ -57,14 +57,14 @@ async function main(){
 
     var start = new Date()
     const startStr = "started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds()
-    fs.appendFile('./logs/exec.log', startStr+'\n', 'utf8', (error) => {
+    fs.appendFile('logs/exec.log', startStr+'\n', 'utf8', (error) => {
         if (error) throw error;
     });
 
     //Retrieve Blockcount
     //var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
     //const blockcount = await getResult(dataString);
-    const blockcount = 101000;
+    const blockcount = 102000;
     const nblocks = 1000;
 
     let finished = 0;
@@ -75,7 +75,7 @@ async function main(){
                 pool.runTask(i, (e, r)=>{
                     if (e){
                         check(i, e).then(()=>{
-                            fs.appendFile('./logs/error.log', i.toString()+'\n', 'utf8', (error) => {
+                            fs.appendFile('logs/error.log', i.toString()+'\n', 'utf8', (error) => {
                                 if (error) throw error;
                             });
                         })
@@ -99,7 +99,7 @@ async function main(){
             var current = new Date()
             const finishedStr = finished+" "+current.getHours()+":"+current.getMinutes()+":"+current.getSeconds()
 
-            fs.appendFile('./logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
+            fs.appendFile('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                 if (error) throw error;
             });
 
@@ -107,11 +107,11 @@ async function main(){
                 console.log('finished')
                 var end = new Date()
                 const endStr = "ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds()
-                fs.appendFile('./logs/exec.log', endStr+'\n', 'utf8', (error) => {
+                fs.appendFile('logs/exec.log', endStr+'\n', 'utf8', (error) => {
                     if (error) throw error;
                     var duration  =  Math.abs(end-start)
                     const durationStr = "duration: "+duration+"ms"
-                    fs.appendFile('./logs/exec.log', durationStr+'\n', 'utf8', (e) => {
+                    fs.appendFile('logs/exec.log', durationStr+'\n', 'utf8', (e) => {
                         if (e) throw e;
                         pool.close();
                         exit()

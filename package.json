@@ -20,6 +20,7 @@
     "helmet": "^4.4.1",
     "lodash": "^4.17.21",
     "mongoose": "^5.11.15",
+    "ora": "^5.4.0",
     "request": "^2.88.2"
   },
   "devDependencies": {

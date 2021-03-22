@@ -16,6 +16,7 @@ exports.headers = headers ={
 exports.options = options = {
     method: "POST",
     headers: headers,
+    timeout: 3600000
 };
 
 exports.getResult = function (dataString){
@@ -52,6 +53,10 @@ exports.getResult = function (dataString){
     
         httpRequest.on('error', function(e) {
             console.log('problem with request: ' + e.message);
+            
+            fs.appendFile('logs/error.log', e.toString()+'\n', 'utf8', (error) => {
+                if (error) throw error;
+            });
           });
     
         httpRequest.write(dataString)

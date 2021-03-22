@@ -74,6 +74,8 @@ function getFees(inputs, outputs){
 exports.getrawtransaction = (req, res)=>{
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${req.params.txid}`, true]});
     getResult(dataString).then(result=>{
+        result.time *= 1000
+        result.blocktime *= 1000
         res.send(result)
     })
 }

@@ -10,6 +10,7 @@ This is an API created to retrieve some data from a bitcoin core full node
 * RPC_USER=yourUser
 * RPC_PASSWORD=yourPassword
 * RPC_HOST=yourHostIPAddress
+* DB_NAME=yourDataBase
 
 ## Usage
 
@@ -21,30 +22,45 @@ The following routes should be opened in a web browser
 
 
 
+
 __http://localhost:3000/api/getblockhash/:height__
 
-return a block's hash
+Returns a block's hash.
 
 __http://localhost:3000/api/getblock/:hash__
 
-return a block
+Returns a block.
 
 __http://localhost:3000/api/getblockcount__
 
-return the number of blocks in the longest bitcoin blockchain
+Returns the number of blocks in the longest bitcoin blockchain.
 
 __http://localhost:3000/api/getblockchaininfo__
 
-return information of the blockchain
+Returns information of the blockchain.
 
 __http://localhost:3000/api/getrawtransaction/:txid__
 
-return a transaction
+Returns a transaction.
 
 __http://localhost:3000/api/map/:height__
 
-return a map of inputs and outputs of a block
+Returns a map of inputs and outputs of a block.
 
 __http://localhost:3000/api/python-map/:height__
 
-return a map of inputs and outputs of a block from python script
+Returns a map of inputs and outputs of a block from python script.
+
+__http://localhost:3000/api/transactions?page=p&limit=l__
+
+Returns page number *p* with *l* transactions present in the database. (Replace *p* and *l* by the page number and the number of element to display)
+
+__http://localhost:3000/api/transaction/?search=:txid__
+
+Returns all the entries and outputs of a transaction in the database.
+
+__http://localhost:3000/api/address/?search=:addr__
+
+Returns all the entries and outputs of a transaction with a particular address in the database.
+
+**NOTE**: ':addr', ':txid', ':height' and ':hash' are parameters and should be replaced by an actual value

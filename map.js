@@ -77,7 +77,7 @@ async function main(){
     //console.log(dataString);
     const blockcount = await getResult(dataString);
     //const blockcount = 101000;
-    const nblocks = 10;
+    const nblocks = 2;
     let finished = 0;
 
     for (let i = blockcount; i > blockcount-nblocks; i--) {
@@ -117,6 +117,7 @@ async function main(){
 
             fs.appendFile('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                 if (error) throw error;
+		console.log(result);
             });
 
             if (++finished === blockcount){

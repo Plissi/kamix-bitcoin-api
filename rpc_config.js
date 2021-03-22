@@ -1,6 +1,6 @@
 require("dotenv").config();
 const http = require("http")
-
+const fs = require('fs');
 const USER = process.env.RPC_USER;
 const PASS = process.env.RPC_PASSWORD;
 const host = process.env.RPC_HOST;

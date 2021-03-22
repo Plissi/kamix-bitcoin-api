@@ -62,14 +62,16 @@ async function main(){
     });
 
     //Retrieve Blockcount
-    //var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
+    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
+    console.log(dataString);
     //const blockcount = await getResult(dataString);
-    const blockcount = 102000;
-    const nblocks = 1000;
+    //console.log(blockcount);
+    const blockcount = 105000;
+    //const nblocks = 5;
 
     let finished = 0;
 
-    for (let i = blockcount; i > blockcount-nblocks; i--) {
+    for (let i = blockcount; i > 0; i--) {
         pool.runTask(i, (err, result) => {            
             if (err){
                 pool.runTask(i, (e, r)=>{
@@ -97,13 +99,13 @@ async function main(){
             }
 
             var current = new Date()
-            const finishedStr = finished+" "+current.getHours()+":"+current.getMinutes()+":"+current.getSeconds()
+            const finishedStr = i+" "+current.getHours()+":"+current.getMinutes()+":"+current.getSeconds()
 
             fs.appendFile('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                 if (error) throw error;
             });
 
-            if (++finished === nblocks){
+            if (++finished === blockcount){
                 console.log('finished')
                 var end = new Date()
                 const endStr = "ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds()

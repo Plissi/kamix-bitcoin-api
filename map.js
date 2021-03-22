@@ -1,11 +1,15 @@
-const WorkerPool = require('./workers/worker_pool')
-const fs = require('fs')
+const WorkerPool = require('./workers/worker_pool');
+const fs = require('fs');
 const { exit } = require('process');
 const mongoose = require('mongoose');
-const TransactionIn = require('./model/TransactionsIn')
-const TransactionOut = require('./model/TransactionsOut')
-const check = require('./workers/check_worker')
-const {getResult} = require('./rpc_config')
+const TransactionIn = require('./model/TransactionsIn');
+const TransactionOut = require('./model/TransactionsOut');
+const check = require('./workers/check_worker');
+const {getResult} = require('./rpc_config');
+const os = require("os");
+const ora = require("ora");
+
+const cpuCount = os.cpus().length;
 
 const uri = process.env.DB_URI;
 
@@ -49,29 +53,39 @@ async function insertion(result){
 }
 
 async function main(){
+
     //Connect to Database
-    await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+        .then(() => console.log('Connexion à MongoDB réussie !'))
+        .catch((err) => console.log('Connexion à MongoDB échouée !', err));
 
     //Create worker pools
-    const pool = new WorkerPool(100);
+    //const pool = new WorkerPool(100);
+    console.log('nbre cpu:', cpuCount);
+    const pool = new WorkerPool(cpuCount);
 
     var start = new Date()
-    const startStr = "started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds()
-    fs.appendFile('logs/exec.log', startStr+'\n', 'utf8', (error) => {
+    const startStr = "started on "+start+"\n";
+    fs.appendFile('logs/exec.log', startStr, 'utf8', (error) => {
         if (error) throw error;
     });
 
+
+
     //Retrieve Blockcount
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
-    console.log(dataString);
-    //const blockcount = await getResult(dataString);
-    //console.log(blockcount);
-    const blockcount = 105000;
-    //const nblocks = 5;
-
+    //console.log(dataString);
+    const blockcount = await getResult(dataString);
+    //const blockcount = 101000;
+    const nblocks = 10;
     let finished = 0;
 
-    for (let i = blockcount; i > 0; i--) {
+    for (let i = blockcount; i > blockcount-nblocks; i--) {
+
+        const spinner = ora("Loading Blockchain \n").start();
+        spinner.color = "yellow";
+        spinner.text = "Traitement en cours ...";
+
         pool.runTask(i, (err, result) => {            
             if (err){
                 pool.runTask(i, (e, r)=>{
@@ -99,7 +113,7 @@ async function main(){
             }
 
             var current = new Date()
-            const finishedStr = i+" "+current.getHours()+":"+current.getMinutes()+":"+current.getSeconds()
+            const finishedStr = finished+" "+i+" "+current.getHours()+":"+current.getMinutes()+":"+current.getSeconds()
 
             fs.appendFile('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                 if (error) throw error;
@@ -107,21 +121,24 @@ async function main(){
 
             if (++finished === blockcount){
                 console.log('finished')
-                var end = new Date()
-                const endStr = "ended at "+end.getHours()+":"+end.getMinutes()+":"+end.getSeconds()
-                fs.appendFile('logs/exec.log', endStr+'\n', 'utf8', (error) => {
+                var end = new Date();
+                const endStr = "ended on "+end+"\n";
+                fs.appendFile('logs/exec.log', endStr, 'utf8', (error) => {
                     if (error) throw error;
                     var duration  =  Math.abs(end-start)
                     const durationStr = "duration: "+duration+"ms"
                     fs.appendFile('logs/exec.log', durationStr+'\n', 'utf8', (e) => {
                         if (e) throw e;
                         pool.close();
-                        exit()
+                        spinner.stop();
+                        console.log("\n Fin du traitement");
+                        exit();
                     });
                 });
             }
         });
+
     }
 }
 
-main()
+main();

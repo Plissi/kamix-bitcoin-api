@@ -2,34 +2,32 @@ const decrypt = require('./decrypt')
 const {getResult} = require('../rpc_config')
 
 async function getBlock(hash){
-    console.log('getBlock');
-    return new Promise(result=>{
-        let mapTx = []
-        var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
-        getResult(dataString).then((block)=>{
-            let txids = block.tx
-            console.log('txids length', txids.length)
-            txids.forEach(txid =>{
-                getTx(txid).then(tx=>{
-                    let voutTx = getOuts(tx)
-                    let vinTx = getIns(tx)
-    
-                    Promise.all([voutTx, vinTx]).then(values=>{
-                        mapTx.push({
-                            ins: values[0],
-                            outs: values[1]
-                        })
-                        if(mapTx.length === txids.length){
-                            result(mapTx);
-                            console.log('mapTx ok')
-                        }
-                    }).catch(e => {
-                        console.log('get block error', e)
-                    } )
-                })
+    let mapTx = []
+    var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
+    const block = await getResult(dataString)
+    let txids = block.tx
+    let fini = 0;
+    for (let i = 0; i < txids.length; i++) {
+        let txid = txids[i]
+        let tx = await getTx(txid)
+        let voutTx = getOuts(tx)
+        let vinTx = getIns(tx)
+
+        await Promise.all([voutTx, vinTx]).then(values=>{
+            mapTx.push({
+                ins: values[0],
+                outs: values[1]
             })
-        })
-    })      
+            if(++fini === txids.length){
+                console.log('mapTx ok')
+            }
+        }).catch(e => {
+            console.log('get block error', e)
+        } )
+    } 
+    return new Promise(result=>{
+        result(mapTx)
+    })
 }
 
 function getTx(txid){
@@ -57,7 +55,7 @@ async function getOuts(rawtx){
                 }
                 outs.push(txin)
             });
-        }else{
+        }else if(vout.scriptPubKey.type == "pubkey"){
             let txin = {
                 txid: rawtx.txid,
                 address: decrypt(vout),

@@ -53,6 +53,7 @@ exports.getResult = function (dataString){
     
         httpRequest.on('error', function(e) {
             console.log('problem with request: ' + e.message);
+            console.log(dataString);
             
             fs.appendFile('logs/error.log', e.toString()+'\n', 'utf8', (error) => {
                 if (error) throw error;

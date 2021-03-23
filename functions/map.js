@@ -32,10 +32,13 @@ async function getBlock(hash){
     })      
 }
 
-async function getTx(txid){
-    let dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${txid}`, true]});
-    let tx = await getResult(dataString)
-    return tx
+function getTx(txid){
+    return new Promise(result => {
+        let dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getrawtransaction",params:[`${txid}`, true]});
+        getResult(dataString).then(tx => {
+            result(tx)
+        })
+    })
 }
 
 async function getOuts(rawtx){

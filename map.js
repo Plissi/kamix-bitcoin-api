@@ -74,7 +74,6 @@ async function main(){
 
     //Retrieve Blockcount
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
-    //console.log(dataString);
     const blockcount = await getResult(dataString);
     //const blockcount = 101000;
     const nblocks = 2;
@@ -117,7 +116,6 @@ async function main(){
 
             fs.appendFile('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                 if (error) throw error;
-		console.log(result);
             });
 
             if (++finished === nblocks){

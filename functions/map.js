@@ -2,22 +2,31 @@ const decrypt = require('./decrypt')
 const {getResult} = require('../rpc_config')
 
 async function getBlock(hash){
+    console.log('getBlock');
     return new Promise(result=>{
         let mapTx = []
         var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${hash}`]});
         getResult(dataString).then((block)=>{
             let txids = block.tx
-            txids.forEach(async (txid) =>{
-                let tx = await getTx(txid)
-                let voutTx = await getOuts(tx)
-                let vinTx = await getIns(tx)
-                mapTx.push({
-                    ins: voutTx,
-                    outs: vinTx
+            console.log('txids length', txids.length)
+            txids.forEach(txid =>{
+                getTx(txid).then(tx=>{
+                    let voutTx = getOuts(tx)
+                    let vinTx = getIns(tx)
+    
+                    Promise.all([voutTx, vinTx]).then(values=>{
+                        mapTx.push({
+                            ins: values[0],
+                            outs: values[1]
+                        })
+                        if(mapTx.length === txids.length){
+                            result(mapTx);
+                            console.log('mapTx ok')
+                        }
+                    }).catch(e => {
+                        console.log('get block error', e)
+                    } )
                 })
-                if(mapTx.length === txids.length){
-                    result(mapTx);
-                }
             })
         })
     })      

@@ -120,7 +120,7 @@ async function main(){
 		console.log(result);
             });
 
-            if (++finished === blockcount){
+            if (++finished === nblocks){
                 console.log('finished')
                 var end = new Date();
                 const endStr = "ended on "+end+"\n";

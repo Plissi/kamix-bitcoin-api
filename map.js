@@ -13,11 +13,14 @@ const cpuCount = os.cpus().length;
 
 const uri = process.env.DB_URI;
 
-async function insertion(result){
-    for (let i = 0; i<result.length; i++){
-        result[i].ins.forEach(async inElement => {
+function insertion(block, result){
+    console.log('result.length', result.length);
+    let count = 0;
+    for (var i = 0; i<result.length; i++){
+        let tx = result[i]
+        ++count;
+        tx.ins.forEach(async inElement => {
             find = await TransactionIn.find(inElement).countDocuments()
-            
             if (inElement.length != 0 && find == 0){
                 try {
                     await TransactionIn.create(inElement)
@@ -25,7 +28,8 @@ async function insertion(result){
                     try {
                         await TransactionIn.create(inElement)
                     } catch (e) {
-                        fs.appendFile('logs/insertion.log', e+'\n', 'utf8', (err) => {
+                        check(block, e, true)
+                        fs.appendFileSync('logs/insertion.log', e+'\n', 'utf8', (err) => {
                             if (err) throw err;
                         });
                     }
@@ -33,7 +37,7 @@ async function insertion(result){
             }
         });
         
-        result[i].outs.forEach(async outElement => {
+        tx.outs.forEach(async outElement => {
             find = await TransactionOut.find(outElement).countDocuments()
             if(outElement.length != 0 && find == 0){
                 try {
@@ -42,7 +46,8 @@ async function insertion(result){
                     try {
                         await TransactionOut.create(outElement)
                     } catch (e) {
-                        fs.appendFile('logs/insertion.log', e+'\n', 'utf8', (err) => {
+                        check(block, e, true)
+                        fs.appendFileSync('logs/insertion.log', e+'\n', 'utf8', (err) => {
                             if (err) throw err;
                         });
                     } 
@@ -50,17 +55,23 @@ async function insertion(result){
             }
        });
     }
+    return new Promise(resolve => { 
+        if (count == result.length){
+            check(block, false, true)
+        }else {
+            check(block, 'incomplete insertion', true)
+        }
+        resolve('ok');
+    })
 }
 
 async function main(){
-
     //Connect to Database
-    mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
         .then(() => console.log('Connexion à MongoDB réussie !'))
         .catch((err) => console.log('Connexion à MongoDB échouée !', err));
 
-    //Create worker pools
-    //const pool = new WorkerPool(100);
+    //Create worker pool
     console.log('nbre cpu:', cpuCount);
     const pool = new WorkerPool(cpuCount);
 
@@ -70,70 +81,52 @@ async function main(){
         if (error) throw error;
     });
 
-
-
     //Retrieve Blockcount
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
     const blockcount = await getResult(dataString);
     //const blockcount = 101000;
-    const nblocks = 2;
+    const nblocks = 10;
     let finished = 0;
 
     for (let i = blockcount; i > blockcount-nblocks; i--) {
-
+    
         const spinner = ora("Loading Blockchain \n").start();
         spinner.color = "yellow";
         spinner.text = "Traitement en cours ...";
 
-        pool.runTask(i, (err, result) => {            
+        pool.runTask(i, async (err, result) => {            
             if (err){
-                pool.runTask(i, (e, r)=>{
-                    if (e){
-                        check(i, e).then(()=>{
-                            fs.appendFile('logs/error.log', i.toString()+'\n', 'utf8', (error) => {
-                                if (error) throw error;
-                            });
-                        })
-                    }else{
-                        check(i).then(()=>{
-                            insertion(result).then((e)=>{
-                                if (e) throw e
-                            })
-                        })
-                    }
-                })
+                /*check(i, err).then(()=>{
+                    fs.appendFile('logs/error.log', i+" "+err.toString()+'\n', 'utf8', (error) => {
+                        if (error) throw error;
+                    });
+                })*/
             }else{
-                check(i).then(()=>{
-                    insertion(result).then((e)=>{
-                        if (e) throw e
-                        else  console.log('ok', i)
-                    })
-                })
-            }
-
-            var current = new Date()
-            const finishedStr = finished+" "+i+" "+current.getHours()+":"+current.getMinutes()+":"+current.getSeconds()
-
-            fs.appendFile('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
-                if (error) throw error;
-            });
-
-            if (++finished === blockcount){
-                console.log('finished')
-                var end = new Date();
-                const endStr = "ended on "+end+"\n";
-                fs.appendFile('logs/exec.log', endStr, 'utf8', (error) => {
+                const finishedStr = finished+" "+i+" "+ new Date()
+                fs.appendFileSync('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                     if (error) throw error;
-                    var duration  =  Math.abs(end-start)
-                    const durationStr = "duration: "+duration+"ms"
-                    fs.appendFile('logs/exec.log', durationStr+'\n', 'utf8', (e) => {
-                        if (e) throw e;
+                });
+                let insertionResult = await insertion(i, result);
+                if (insertionResult == 'ok'){
+                    console.log('ok', i);
+                    if (++finished === nblocks){
+                        //console.log('finished')
+                        var end = new Date();
+                        const endStr = "ended on "+end+"\n";
+                        fs.appendFileSync('logs/exec.log', endStr, 'utf8', (error) => {
+                            if (error) throw error;
+                        });
+                        var duration  =  Math.abs(end-start)
+                        const durationStr = "duration: "+duration+"ms"
+                        fs.appendFileSync('logs/exec.log', durationStr+'\n', 'utf8', (e) => {
+                            if (e) throw e;
+                        });
                         pool.close();
                         spinner.stop();
-                        console.log("\n Fin du traitement");
-                        exit();
-                    });
-                });
+                        console.log("\nFin du traitement");
+                        exit(1);
+                    }
+                }
             }
         });
 

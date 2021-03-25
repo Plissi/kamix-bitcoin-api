@@ -14,15 +14,13 @@ const cpuCount = os.cpus().length;
 const uri = process.env.DB_URI;
 
 async function insertion(block, result){
-    console.log('result.length', result.length);
-    let count = 0;
+    console.log(result.length, ' transactions');
     let options = { ordered: true };
     let ajout = await new Promise(resolve =>{
         let tab = [];
         let inAAjouter = [];
         let outAAjouter = [];
         for(let tx of result) {
-            ++count;
             for(let inElement of tx.ins){
                 //await TransactionIn.findOne(inElement).countDocuments().then(async (find) => {
                     //if (find == 0){
@@ -38,7 +36,6 @@ async function insertion(block, result){
                // })
            }
            if(result.indexOf(tx)+1 == result.length){
-                console.log('a ajouter', inAAjouter.length, outAAjouter.length)
                 tab[0] = inAAjouter;
                 tab[1] = outAAjouter;
            }
@@ -46,7 +43,7 @@ async function insertion(block, result){
         resolve(tab);
     })
     await Promise.all([TransactionIn.insertMany(ajout[0], options), TransactionOut.insertMany(ajout[1], options)]).then((res)=>{
-        console.log(res.insertedCount, ' documents inserted');
+        console.log(res.count(), ' documents inserted');
         check(block, false, true)
         fs.appendFileSync('logs/insertion.log', 'insertion completed for block '+block+'\n', 'utf8', (err) => {
             if (err) throw err;
@@ -58,7 +55,7 @@ async function insertion(block, result){
         });
     })
     return new Promise(resolve => {
-        console.log('attendus', ajout[0].length + ajout[1].length)
+        console.log(ajout[0].length + ajout[1].length, ' waited')
         resolve('ok');
     })
 }

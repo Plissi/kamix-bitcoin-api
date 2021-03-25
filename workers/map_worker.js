@@ -19,6 +19,8 @@ parentPort.on('message', (message)=>{
                         parentPort.postMessage(map)
                     })
                 })
+            }else{
+                parentPort.postMessage(null)
             }
         })
     })

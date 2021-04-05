@@ -1,4 +1,5 @@
-const {getResult} = require('../rpc_config')
+const {getResult} = require('../rpc_config');
+const Check = require('../model/CheckBlock')
 
 //get the block's hash from its height
 exports.getblockhash = (req, res)=>{
@@ -27,5 +28,23 @@ exports.getblockcount = (req, res)=>{
         res.send({blockcount: result})
     }).catch(e=>{
         if (e) console.log(e);
+    })
+}
+
+exports.getbitcoininfos = (req, res) => {
+    var dataString = "{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockcount\",\"params\":[]}";
+    const processedCount = Check.countDocuments();
+    const totalCount = getResult(dataString);
+
+    Promise.all([processedCount, totalCount]).then(values => {
+        let percentage = Math.round((values[0]/values[1])*100);
+        
+        let data = {
+            'processed': values[0],
+            'total': values[1],
+            'percentage': percentage
+        }
+
+        res.send(data);
     })
 }

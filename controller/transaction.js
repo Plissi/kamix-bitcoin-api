@@ -1,52 +1,37 @@
 const TransactionIn = require('../model/TransactionsIn')
 const TransactionOut = require('../model/TransactionsOut')
+const Transaction = require('../model/Transactions')
 const {getResult} = require('../rpc_config')
-const _ = require('lodash')
 
-async function call(){
-    //let txout = await TransactionOut.distinct('txid');
-    let txs = await TransactionIn.aggregate([
-        { $project: { txid: 1, blocktime:1, _id: 0 } },
-        { $unionWith: { coll: "txout", pipeline: [ { $project: { txid: 1, blocktime:1, _id: 0 } } ]} },
-        { $group : { _id : "$txid", time : {$push: "$blocktime"} } },
-        { $sort : { time : -1 } }
-    ]);
+async function call(page, perPage){
+    let txs = await Transaction.find().select('_id')
+    .limit(perPage)
+    .skip(perPage * page)
+    .sort({time: -1})
     let txids = [];
     txs.forEach(tx=>{
         txids.push(tx._id)
-        //console.log(tx._id, tx.time[0])
     })
-    
     return txids
 }
 
-function looping(txids, page, perPage, res){
+function looping(txids, res){
     let transactions = []
-    let limitedTxids = []
-    let count= 1
-    let skip = perPage * page - perPage
-    let limit = perPage * page
-    for (var i = skip; i<limit; i++){
-        limitedTxids.push(txids[i])
-    }
-    limitedTxids.forEach(txid=>{
+    txids.forEach(txid=>{
         let txout = TransactionOut.find({'txid': txid})    
         let txin = TransactionIn.find({'txid': txid})
         
         Promise.all([txout, txin]).then(values=>{
-            //let pages = txids.length / perPage
             let fee = getFees(values[0], values[1])[0];
             let valueIn = getFees(values[0], values[1])[2];
-            //let valueOuts = getFees(values[0], values[1])[2];
             let data={}
             data = {
                 'txid': txid,
                 'value': valueIn,
                 'fee': fee
             }
-            //console.log('fee', fee, 'i', valueIns, 'o', valueOuts)
             transactions.push(data)
-            if (count++ == perPage){
+            if (txid.length == transactions.length){
                 res.send(transactions);
             }
         })
@@ -92,31 +77,58 @@ exports.gettransactions = (req, res) =>{
     let page = Math.max(1, req.query.page)
     let perPage = Math.max(1, req.query.limit)
 
-    call().then((txids)=>{
-        looping(txids, page, perPage, res)        
+    call(page, perPage).then((txids)=>{
+        looping(txids, res)        
     })
   
 }
 
 exports.gettransaction = (req, res) =>{
-    let transaction = []
-    TransactionOut.find({txid: req.query.search}).then((tx)=>{
-        transaction.push({outs: tx})
-        TransactionIn.find({txid: req.query.search}).then((tx)=>{
-            transaction.push({ins: tx})
-            res.send(transaction)
-        })
-    })   
-}
-
-exports.getaddress = (req, res) =>{
-    let address = []
-    TransactionOut.find({address: req.query.search}).then((addr)=>{
-        address.push({outs: addr})
-        TransactionIn.find({address: req.query.search}).then((addr)=>{
-            address.push({ins: addr})
-            res.send(address)
-        })
+    let txout = TransactionOut.find({'txid': req.query.search})    
+    let txin = TransactionIn.find({'txid': req.query.search})
+    Promise.all([txout, txin]).then(values=>{
+        let fee = getFees(values[0], values[1])[0];
+        let valueIn = getFees(values[0], values[1])[2];
+        let transaction = {
+            'outs': values[0],
+            'ins': values[1],
+            'fee': fee,
+            'received': valueIn
+        }
+        res.send(transaction)
     })
 }
 
+exports.getaddress = (req, res) =>{
+    TransactionIn.aggregate([
+        { $unionWith: { coll: "txout"} },
+        { $match : { address: req.query.search } },
+        { $group : { _id : "$txid"} }
+    ]).option({
+        allowDiskUse: true
+    }).exec((err, result)=>{
+console.log(result)
+        let transactions = [];
+        result.forEach(tx=>{
+            let txid = tx._id
+            let txout = TransactionOut.find({'txid': txid})    
+            let txin = TransactionIn.find({'txid': txid})
+            Promise.all([txout, txin]).then(values=>{
+                let fee = getFees(values[0], values[1])[0];
+                let valueIn = getFees(values[0], values[1])[2];
+                let data={
+                    'txid': txid,
+                    'outs': values[0],
+                    'ins': values[1],
+                    'fee': fee,
+                    'received': valueIn
+                }
+                transactions.push(data)
+                if(result.length == transactions.length){
+                    console.log(transactions)
+                    res.send(transactions)
+                }
+            })
+        })
+    })
+}

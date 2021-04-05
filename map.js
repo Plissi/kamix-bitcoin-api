@@ -43,7 +43,7 @@ async function insertion(block, result){
         resolve(tab);
     })
     await Promise.all([TransactionIn.insertMany(ajout[0], options), TransactionOut.insertMany(ajout[1], options)]).then((res)=>{
-        console.log(res.count(), ' documents inserted');
+        console.log(res[0].length + res[1].length, ' documents inserted');
         check(block, false, true)
         fs.appendFileSync('logs/insertion.log', 'insertion completed for block '+block+'\n', 'utf8', (err) => {
             if (err) throw err;
@@ -80,7 +80,7 @@ async function main(){
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
     const blockcount = await getResult(dataString);
     //const blockcount = 101000;
-    const nblocks = 2;
+    const nblocks = blockcount;
     let finished = 0;
 
     for (let i = blockcount; i > blockcount-nblocks; i--) {
@@ -119,14 +119,14 @@ async function main(){
                             pool.close();
                             spinner.stop();
                             console.log("\nFin du traitement");
-                            exit(1);
+                            //exit(1);
                         }
                     }
                 }else{
-                    const finishedStr = "already "+i+" "+ new Date()
-                    fs.appendFileSync('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
-                        if (error) throw error;
-                    });
+                    //const finishedStr = "already "+i+" "+ new Date()
+                    //fs.appendFileSync('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
+                    //    if (error) throw error;
+                    //});
                     if (++finished === nblocks){
                         //console.log('finished')
                         var end = new Date();
@@ -142,7 +142,7 @@ async function main(){
                         pool.close();
                         spinner.stop();
                         console.log("\nFin du traitement");
-                        exit(1);
+                        //exit(1);
                     }
                 }
             }

@@ -8,5 +8,6 @@ router.get("/listtransactions", transactionController.listtransactions);
 router.get('/transactions', transactionController.gettransactions);
 router.get('/transaction', transactionController.gettransaction);
 router.get('/address', transactionController.getaddress);
+router.get('/addressinfos', transactionController.getaddressinfos);
 
 module.exports = router;

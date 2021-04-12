@@ -5,7 +5,7 @@ const Check = require('../model/CheckBlock')
 exports.getblockhash = (req, res)=>{
     var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${req.params.height}]}`;
     getResult(dataString).then(result=>{
-        res.send({hash: result})
+        res.json({hash: result})
     }).catch(e=>{
         if (e) console.log(e);
     })
@@ -15,7 +15,7 @@ exports.getblockhash = (req, res)=>{
 exports.getblock = (req, res)=>{
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblock",params:[`${req.params.hash}`]});
     getResult(dataString).then(result=>{
-        res.send(result)
+        res.json(result)
     }).catch(e=>{
         if (e) console.log(e);
     })
@@ -25,7 +25,7 @@ exports.getblock = (req, res)=>{
 exports.getblockcount = (req, res)=>{
     var dataString = "{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockcount\",\"params\":[]}";
     getResult(dataString).then(result=>{
-        res.send({blockcount: result})
+        res.json({blockcount: result})
     }).catch(e=>{
         if (e) console.log(e);
     })
@@ -37,14 +37,14 @@ exports.getbitcoininfos = (req, res) => {
     const totalCount = getResult(dataString);
 
     Promise.all([processedCount, totalCount]).then(values => {
-        let percentage = Math.round((values[0]/values[1])*100);
+        let percentage = (values[0]/values[1])*100;
         
         let data = {
             'processed': values[0],
             'total': values[1],
-            'percentage': percentage
+            'percentage': percentage.toFixed(2)
         }
 
-        res.send(data);
+        res.json(data);
     })
 }

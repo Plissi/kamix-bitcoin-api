@@ -7,7 +7,25 @@ router.get("/", (req, res)=>{
     res.send("<h1>It works!</h1>")
 })
 
-//mapping function
+/**
+ * @api {get} /map/:height Indexer le bloc de hauteur height
+ * @apiParam {String} height Hauteur du bloc
+ * @apiHeader {String} content-type json
+ * @apiSuccess {json} map Transactions entrantes et sortantes
+ * @apiGroup Map
+ * @apiSuccessExample {json} Success
+ *    HTTP/1.1 200 OK
+ *    {
+ *      "ins": [],
+ *      "outs": []
+ *    }
+ * @apiErrorExample {json} Error-Response:
+ * HTTP/1.1 404 Not Found
+ * {
+ *     "message": "Le bloc n'existe pas"
+ * }
+ *
+ */
 router.get("/map/:height", (req, res)=>{    
     var start = new Date()
     console.log("started at "+start.getHours()+":"+start.getMinutes()+":"+start.getSeconds())
@@ -20,7 +38,7 @@ router.get("/map/:height", (req, res)=>{
     
             var duration  =  Math.abs(end-start)
             console.log("duration: "+duration+"ms")
-            res.send(map)
+            res.json(map)
         })
     })
 })

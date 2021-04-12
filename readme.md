@@ -9,8 +9,8 @@ This is an API created to retrieve some data from a bitcoin core full node
 2. Create a .env file in the project's folder with the following information:
 * RPC_USER=yourUser
 * RPC_PASSWORD=yourPassword
-* RPC_HOST=yourHostIPAddress
-* DB_NAME=yourDataBase
+* RPC_HOST=yourHost
+* DB_URI=yourDataBase
 
 ## Usage
 

@@ -43,7 +43,7 @@ async function insertion(block, result){
         resolve(tab);
     })
     await Promise.all([TransactionIn.insertMany(ajout[0], options), TransactionOut.insertMany(ajout[1], options)]).then((res)=>{
-        console.log(res.count(), ' documents inserted');
+        console.log(res[0].length + res[1].length, ' documents inserted');
         check(block, false, true)
         fs.appendFileSync('logs/insertion.log', 'insertion completed for block '+block+'\n', 'utf8', (err) => {
             if (err) throw err;
@@ -62,7 +62,7 @@ async function insertion(block, result){
 
 async function main(){
     //Connect to Database
-    await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true, poolSize: 10 })
         .then(() => console.log('Connexion à MongoDB réussie !'))
         .catch((err) => console.log('Connexion à MongoDB échouée !', err));
 
@@ -90,11 +90,11 @@ async function main(){
 
         pool.runTask(i, async (err, result) => {            
             if (err){
-                /*check(i, err).then(()=>{
+                check(i, err).then(()=>{
                     fs.appendFile('logs/error.log', i+" "+err.toString()+'\n', 'utf8', (error) => {
                         if (error) throw error;
                     });
-                })*/
+                })
             }else{
                 if (result != null){
                     const finishedStr = finished+" "+i+" "+ new Date()
@@ -119,7 +119,6 @@ async function main(){
                             pool.close();
                             spinner.stop();
                             console.log("\nFin du traitement");
-                            exit(1);
                         }
                     }
                 }else{
@@ -142,7 +141,6 @@ async function main(){
                         pool.close();
                         spinner.stop();
                         console.log("\nFin du traitement");
-                        exit(1);
                     }
                 }
             }

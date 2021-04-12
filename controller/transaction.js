@@ -33,7 +33,7 @@ function looping(txids, res){
             }
             transactions.push(data)
             if (txid.length == transactions.length){
-                res.send(transactions);
+                res.json(transactions);
             }
         })
     })
@@ -62,7 +62,7 @@ exports.getrawtransaction = (req, res)=>{
     getResult(dataString).then(result=>{
         result.time *= 1000
         result.blocktime *= 1000
-        res.send(result)
+        res.json(result)
     })
 }
 
@@ -70,7 +70,7 @@ exports.getrawtransaction = (req, res)=>{
 exports.listtransactions = (req, res)=>{
     var dataString = "{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"listtransactions\",\"params\":[]}";
     getResult(dataString).then(result=>{
-        res.send(result)
+        res.json(result)
     })
 }
 
@@ -96,7 +96,7 @@ exports.gettransaction = (req, res) =>{
             'fee': fee,
             'received': valueIn
         }
-        res.send(transaction)
+        res.json(transaction)
     })
 }
 
@@ -126,62 +126,69 @@ exports.getaddress = (req, res) =>{
                 transactions.push(data)
                 if(result.length == transactions.length){
                     console.log(transactions)
-                    res.send(transactions)
+                    res.json(transactions)
                 }
             })
         })
     })
 }
 
-exports.getaddressinfos = (req, res) =>{
+exports.getaddressinfos = async (req, res) =>{
     let search = req.query.search;
-    TransactionIn.aggregate([
-        { $unionWith: { coll: "txout"} },
-        { $match : { address: search } },
-        { $group : { _id : "$txid"} }
-    ]).option({
-        allowDiskUse: true
-    }).exec((err, result)=>{
-        let transactions = {};
-        result.forEach(tx=>{
-            let txid = tx._id
-            let date = 1000 * tx.time
-            let sens;
-            let debit = 0, credit = 0;
-            let price = pastBtcPrice(data);
-            let txout = TransactionOut.find({'txid': txid})    
-            let txin = TransactionIn.find({'txid': txid})
-            Promise.all([txout, txin]).then(values=>{
-                let fee = getFees(values[0], values[1])[0];
-                let valueIn = getFees(values[0], values[1])[2];
-                values[0].foreach(output =>{
-                    if (output.address == search){
-                        sens = 'withdrawal';
-                        credit = output.value;
-                    }else{
-                        sens = 'deposit';
-                        debit = output.value;
-                    }
-                })
-                let data={
-                    'date': date,
-                    'txid': txid,
-                    'sens': sens,
-                    'crypto': 'btc',
-                    'debit': debit,
-                    'credit': credit,
-                    'cotation': price,
-                    'debit_euro': debit * cotation,
-                    'credit_euro': credit * cotation,
-                    'fee': fee,
-                    'received': valueIn
-                }
-                transactions.push(data)
-                if(result.length == transactions.length){
-                    console.log(transactions)
-                    res.send(transactions)
-                }
-            })
-        })
+    let io = [];
+    let result = await Promise.all([TransactionOut.find({'address': search}), TransactionIn.find({'address': search})])
+    io.push(result[0].map(output => {
+        return {
+            '_id': output.txid,
+            'time': output.blocktime,
+            'sens': 'withdrawal',
+            'value': output.value
+        }
+    }));
+    io.push(result[1].map(input => {
+        return {
+            '_id': input.txid,
+            'time': input.blocktime,
+            'sens': 'deposit',
+            'value': input.value
+        }
+    }));
+    let txids = io[0].concat(io[1]);
+    console.log('matched');
+    let transactions = txids.map(async tx=>{
+        let txid = tx._id;
+        let date = 1000 * tx.time;
+        let sens = tx.sens;
+        let debit = 0, credit = 0;
+        if (sens == 'withdrawal'){
+            credit = tx.value;
+        } else{
+            debit = tx.value;
+        }
+
+        let txout = TransactionOut.find({'txid': txid}); 
+        let txin = TransactionIn.find({'txid': txid});
+
+        let values = await Promise.all([txout, txin, pastBtcPrice(date)]);
+        let price = values[2];
+        let fee = getFees(values[0], values[1])[0];
+        let valueIn = getFees(values[0], values[1])[2];
+        return {
+            'date': date,
+            'txid': txid,
+            'sens': sens,
+            'crypto': 'btc',
+            'debit': debit,
+            'credit': credit,
+            'cotation': price,
+            'debit_euro': debit * price,
+            'credit_euro': credit * price,
+            'fee': fee,
+            'received': valueIn
+        }
+    })
+    
+    await Promise.all(transactions).then(completed => {
+        res.json(completed);
     })
 }

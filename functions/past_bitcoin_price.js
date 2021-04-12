@@ -1,3 +1,5 @@
+const CoinGecko = require('coingecko-api');
+const CoinGeckoClient = new CoinGecko();
 const https = require('https')
 
 const headers ={
@@ -10,33 +12,63 @@ const options = {
 };
 
 exports.pastBtcPrice = (date)=>{
-    let day, month, year;
-    year = date.getFullYear();
-    month = date.getMonth()+1;
-    day = date.getDate();
-
-    if (month <10) month += '0'+toString(month);
-    if (day <10) day += '0'+toString(day);
-
-    let date_string = year+'-'+month+'-'+day
-    new Promise(resolve=>{
-        const url = `https://api.coindesk.com/v1/bpi/historical/close.json?start=${date_string}&end=${date_string}&currency=eur`
-        var httpsRequest = https.request(options, url, (response)=>{
-            response.on('end', data=>{
-                resolve(data.bpi.date_string);
-            })
-        })
-
-        httpsRequest.on('error', function(e) {
-            console.log('problem with price request: ' + e.message);
-            console.log(dataString);
+    return new Promise(resolve=>{
+        if (date < new Date(2013, 4, 28).getTime()) {
+            date = new Date(date);
+            let day, month, year;
+            year = date.getFullYear();
+            month = date.getMonth()+1;
+            day = date.getDate();
             
-            fs.appendFile('logs/error.log', e.toString()+'\n', 'utf8', (error) => {
-                if (error) throw error;
-            });
-          });
+            if (month <10) month = '0'+month;
+            if (day <10) day = '0'+day;
+        
+            let date_string = year+'-'+month+'-'+day
+            let url = `https://api.coindesk.com/v1/bpi/historical/close.json?start=${date_string}&end=${date_string}&currency=eur`
+            var httpsRequest = https.request(url, options, (response)=>{
+                let tab =[];
+                response.on('data', result=>{
+                    tab.push(result)
+                }).on('end', ()=>{
+                    let data = Buffer.concat(tab)
+                    let stringData = data.toString().trim()
+                    let fin = JSON.parse(stringData)
+                    if (fin.bpi.EUR == undefined){
+                        resolve(fin.bpi[date_string]);
+                    } else {
+                        resolve(fin.bpi.EUR.rate_float);
+                    }
+                })
+            })
     
-        httpsRequest.write(dataString)
-        httpsRequest.end()
+            httpsRequest.on('error', function(e) {
+                console.log('problem with price request: ' + e.message);   
+                fs.appendFile('logs/error.log', e.toString()+'\n', 'utf8', (error) => {
+                    if (error) throw error;
+                });
+              });
+        
+            httpsRequest.end()
+        } else{
+            date = new Date(date);
+            let day, month, year;
+            year = date.getFullYear();
+            month = date.getMonth()+1;
+            day = date.getDate();
+            
+            if (month <10) month = '0'+month;
+            if (day <10) day = '0'+day;
+        
+            let date_string = day+'-'+month+'-'+year
+
+            CoinGeckoClient.coins.fetchHistory('bitcoin', {
+                date: date_string,
+                localization: false
+            }).then(data =>{
+                resolve(data.data.market_data.current_price.eur)
+            }).catch(error => {
+                console.log('problem with price request: ' + error.message);  
+            })
+        }
     })
 }

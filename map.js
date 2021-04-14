@@ -80,7 +80,7 @@ async function main(){
     var dataString = JSON.stringify({jsonrpc:"2.0",id:"curltext",method:"getblockcount",params:[]});
     const blockcount = await getResult(dataString);
     //const blockcount = 101000;
-    const nblocks = 2;
+    const nblocks = blockcount;
     let finished = 0;
 
     for (let i = blockcount; i > blockcount-nblocks; i--) {
@@ -122,10 +122,10 @@ async function main(){
                         }
                     }
                 }else{
-                    const finishedStr = "already "+i+" "+ new Date()
-                    fs.appendFileSync('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
-                        if (error) throw error;
-                    });
+                    //const finishedStr = "already "+i+" "+ new Date()
+                    //fs.appendFileSync('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
+                    //    if (error) throw error;
+                    //});
                     if (++finished === nblocks){
                         //console.log('finished')
                         var end = new Date();

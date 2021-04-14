@@ -19,9 +19,9 @@ async function call(page, perPage){
 function looping(txids, res){
     let transactions = []
     txids.forEach(txid=>{
-        let txout = TransactionOut.find({'txid': txid})    
+        let txout = TransactionOut.find({'txid': txid})
         let txin = TransactionIn.find({'txid': txid})
-        
+
         Promise.all([txout, txin]).then(values=>{
             let fee = getFees(values[0], values[1])[0];
             let valueIn = getFees(values[0], values[1])[2];

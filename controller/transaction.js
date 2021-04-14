@@ -136,7 +136,11 @@ exports.getaddress = (req, res) =>{
 exports.getaddressinfos = async (req, res) =>{
     let search = req.query.search;
     let io = [];
-    let result = await Promise.all([TransactionOut.find({'address': search}), TransactionIn.find({'address': search})])
+    let start = Date.now()
+    let result = await Promise.all([
+        TransactionOut.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1}), 
+        TransactionIn.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1})
+    ])
     io.push(result[0].map(output => {
         return {
             '_id': output.txid,
@@ -154,7 +158,6 @@ exports.getaddressinfos = async (req, res) =>{
         }
     }));
     let txids = io[0].concat(io[1]);
-    console.log('matched');
     let transactions = txids.map(async tx=>{
         let txid = tx._id;
         let date = 1000 * tx.time;
@@ -166,8 +169,8 @@ exports.getaddressinfos = async (req, res) =>{
             debit = tx.value;
         }
 
-        let txout = TransactionOut.find({'txid': txid}); 
-        let txin = TransactionIn.find({'txid': txid});
+        let txout = TransactionOut.find({'txid': txid}, {'txid': 1, 'value': 1}).hint("txid_1_address_1"); 
+        let txin = TransactionIn.find({'txid': txid}, {'txid': 1, 'value': 1}).hint("txid_1_address_1");
 
         let values = await Promise.all([txout, txin, pastBtcPrice(date)]);
         let price = values[2];
@@ -189,6 +192,7 @@ exports.getaddressinfos = async (req, res) =>{
     })
     
     await Promise.all(transactions).then(completed => {
+        console.log('matched', Date.now()-start + 'ms');
         res.json(completed);
     })
 }

@@ -22,7 +22,8 @@ const mongoose = require('mongoose');
 var helmet = require("helmet");
 const rpcMethods = require("./routes/api");
 const tx = require('./routes/transaction');
-const block = require('./routes/block')
+const block = require('./routes/block');
+const user = require('./routes/user')
 const app = express();
 require("dotenv").config();
 
@@ -46,5 +47,6 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
 app.use("/api", [rpcMethods, tx, block]);
+app.use("/", user);
 
 module.exports = app;

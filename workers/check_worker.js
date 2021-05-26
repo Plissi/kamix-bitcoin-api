@@ -1,4 +1,5 @@
-const Check = require('../model/CheckBlock')
+const Check = require('../model/CheckBlock');
+const TransactionsIn = require('../model/TransactionsIn');
 
 module.exports = (block, error, terminated)=>{ 
     return new Promise(result => {
@@ -30,6 +31,17 @@ module.exports = (block, error, terminated)=>{
                     }else if (terminated){
                         checkline.et = 1;
                         checkline.end = finish;
+                    } else if (checkline.et == 0){
+                        var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${block}]}`;
+            
+                        let blockhash = await getResult(dataString)
+                        let checkin = await TransactionsIn.findOne({'blockhash': blockhash}).countDocuments()
+                        if (checkin == 0){
+                            result(false)
+                        }else {
+                            checkline.et = 1;
+                            checkline.end = finish;
+                        }
                     }
                     await checkline.save();
                     result(true);

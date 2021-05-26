@@ -3,6 +3,9 @@ const TransactionOut = require('../model/TransactionsOut')
 const Transaction = require('../model/Transactions')
 const {getResult} = require('../rpc_config')
 const {pastBtcPrice} = require('../functions/past_bitcoin_price')
+const _ = require('lodash')
+
+const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0);
 
 async function call(page, perPage){
     let txs = await Transaction.find().select('_id')
@@ -53,7 +56,41 @@ function getFees(inputs, outputs){
         return [0, valueIn, valueOut]
     } else {
         return [fees, valueIn, valueOut]
-    }  
+    }
+}
+
+//get transactions to be displayed on the home page of btc
+exports.gethomepagetransactions = async(req, res) => {
+    let txids = [];
+    let times = 0;
+    while (txids.length < 50){
+        let txs = await TransactionOut.find({}).sort({blocktime: -1}).skip(50 * times).limit(50);
+        times++;
+        txs.map(element => {
+            txids.push(element.txid)
+        })
+        txids = _.uniq(txids)
+        console.log(txids.length)
+    }
+    txids = txids.slice(0, 50);
+
+    let txs = []
+    for (let txid in txids){
+        console.log(txids[txid])
+        let txout = TransactionOut.find({'txid': txids[txid]}, {'txid': 1, 'value': 1})
+        let txin = TransactionIn.find({'txid': txids[txid]}, {'txid': 1, 'value': 1})
+        let values = await Promise.all([txout, txin])
+        let result = getFees(values[0], values[1]);
+
+        txs.push({
+            txid : txids[txid],
+            fee : result[0],
+            valueOut : result[1],
+            valueIn : result[2]
+        })
+    }
+
+    res.json(txs);
 }
 
 //get information about a rawtransaction from the transaction id
@@ -79,13 +116,13 @@ exports.gettransactions = (req, res) =>{
     let perPage = Math.max(1, req.query.limit)
 
     call(page, perPage).then((txids)=>{
-        looping(txids, res)        
+        looping(txids, res)
     })
-  
+
 }
 
 exports.gettransaction = (req, res) =>{
-    let txout = TransactionOut.find({'txid': req.query.search})    
+    let txout = TransactionOut.find({'txid': req.query.search})
     let txin = TransactionIn.find({'txid': req.query.search})
     Promise.all([txout, txin]).then(values=>{
         let fee = getFees(values[0], values[1])[0];
@@ -111,7 +148,7 @@ exports.getaddress = (req, res) =>{
         let transactions = [];
         result.forEach(tx=>{
             let txid = tx._id
-            let txout = TransactionOut.find({'txid': txid})    
+            let txout = TransactionOut.find({'txid': txid})
             let txin = TransactionIn.find({'txid': txid})
             Promise.all([txout, txin]).then(values=>{
                 let fee = getFees(values[0], values[1])[0];
@@ -135,12 +172,23 @@ exports.getaddress = (req, res) =>{
 
 exports.getaddressinfos = async (req, res) =>{
     let search = req.query.search;
+    let page = Math.max(1, req.query.page)
+    let perPage = Math.max(1, req.query.limit)
     let io = [];
     let start = Date.now()
     let result = await Promise.all([
-        TransactionOut.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1}), 
+        TransactionOut.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1})
+        .skip(perPage * page-perPage)
+        .limit(perPage)
+        .sort({blocktime: -1}),
         TransactionIn.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1})
+        .skip(perPage * page-perPage)
+        .limit(perPage)
+        .sort({blocktime: -1}),
+        TransactionOut.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1}).countDocuments(),
+        TransactionIn.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1}).countDocuments()
     ])
+    let pages = Math.ceil((result[2]+result[3])/perPage)
     io.push(result[0].map(output => {
         return {
             '_id': output.txid,
@@ -163,14 +211,14 @@ exports.getaddressinfos = async (req, res) =>{
         let date = 1000 * tx.time;
         let sens = tx.sens;
         let debit = 0, credit = 0;
-        if (sens == 'withdrawal'){
+        if (sens != 'withdrawal'){
             credit = tx.value;
         } else{
             debit = tx.value;
         }
 
-        let txout = TransactionOut.find({'txid': txid}, {'txid': 1, 'value': 1}).hint("txid_1_address_1"); 
-        let txin = TransactionIn.find({'txid': txid}, {'txid': 1, 'value': 1}).hint("txid_1_address_1");
+        let txout = TransactionOut.find({'txid': txid}, {'txid': 1, 'value': 1});
+        let txin = TransactionIn.find({'txid': txid}, {'txid': 1, 'value': 1});
 
         let values = await Promise.all([txout, txin, pastBtcPrice(date)]);
         let price = values[2];
@@ -190,9 +238,13 @@ exports.getaddressinfos = async (req, res) =>{
             'received': valueIn
         }
     })
-    
+
     await Promise.all(transactions).then(completed => {
-        console.log('matched', Date.now()-start + 'ms');
-        res.json(completed);
+        console.log(Date.now()-start + 'ms');
+        let toSend = {
+            completed,
+            pages
+        }
+        res.json(toSend);
     })
 }

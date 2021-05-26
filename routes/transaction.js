@@ -3,6 +3,8 @@ const router = express.Router();
 
 const transactionController = require('../controller/transaction');
 
+router.get("/hometransactions", transactionController.gethomepagetransactions);
+
 /**
  * @api {get} /getrawtransaction/:txid Récupère une transaction dans la blockchain
  * @apiParam {String} txid id de la transaction
@@ -12,12 +14,12 @@ const transactionController = require('../controller/transaction');
  * @apiSuccessExample {json} Success
  *    HTTP/1.1 200 OK
  *      {
- * 
+ *
  *      }
  * @apiErrorExample {json} Error-Response:
  * HTTP/1.1 500 Not Found
  * {
- *     "error": 
+ *     "error":
  * }
  *
  */
@@ -33,12 +35,12 @@ router.get("/listtransactions", transactionController.listtransactions);
  * @apiSuccessExample {json} Success
  *    HTTP/1.1 200 OK
  *      {
- * 
+ *
  *      }
  * @apiErrorExample {json} Error-Response:
  * HTTP/1.1 500 Not Found
  * {
- *     "error": 
+ *     "error":
  * }
  *
  */
@@ -53,12 +55,12 @@ router.get('/transactions', transactionController.gettransactions);
  * @apiSuccessExample {json} Success
  *    HTTP/1.1 200 OK
  *      {
- * 
+ *
  *      }
  * @apiErrorExample {json} Error-Response:
  * HTTP/1.1 500 Not Found
  * {
- *     "error": 
+ *     "error":
  * }
  *
  */
@@ -113,7 +115,7 @@ router.get('/transaction', transactionController.gettransaction);
  * @apiErrorExample {json} Error-Response:
  * HTTP/1.1 500 Not Found
  * {
- *     "error": 
+ *     "error":
  * }
  *
  */
@@ -156,7 +158,7 @@ router.get('/address', transactionController.getaddress);
  * @apiErrorExample {json} Error-Response:
  * HTTP/1.1 500 Not Found
  * {
- *     "error": 
+ *     "error":
  * }
  *
  */

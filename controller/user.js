@@ -4,20 +4,24 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv')
 dotenv.config();
 
-function generateToken(username){
-    return jwt.sign({exp:3600,data:username}, process.env.TOKEN_SECRET);
+function generateToken(user){
+    return jwt.sign({
+        exp:Math.floor(Date.now() / 1000) + (60 * 60 * 2),
+        data:user
+    }, process.env.TOKEN_SECRET);
 }
 
 function verifyAuth(req, res){
-    let token = req.headers['x-access-token'];
-    if (!token) return res.sendStatus(401).json({ auth: false, message: 'No token provided.' });
-
-    jwt.verify(token, process.env.TOKEN_SECRET, function(err, decoded) {
-        if (err) return res.sendStatus(500).json({ auth: false, message: 'Failed to authenticate token.' });
-
-        res.sendStatus(200).json(decoded);
+    return new Promise(resolve=>{
+        let token = req.headers['x-access-token'];
+        if (!token)  resolve({auth: false, message: 'No token provided.'});
+        jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
+            if (err) resolve({auth: false, message: 'Failed to authenticate token.'});
+            resolve({auth: true, data: decoded});
+        })
     })
 }
+exports.verifyAuth = verifyAuth;
 
 exports.register= async(req, res) =>{
     let salt =  bcrypt.genSaltSync(8) ;
@@ -34,7 +38,7 @@ exports.register= async(req, res) =>{
             console.log(err)
             return res.json({status: 500, message: "There was a problem registering the user."});
         }else {
-            let token = generateToken(user.username);
+            let token = generateToken(user);
             res.json({user: user});
         }
     }) )
@@ -45,19 +49,32 @@ exports.login = (req, res) =>{
     User.findOne()
         .or([{username:  req.body.username}, {email:  req.body.username}])
         .then((user)=>{
-        if (!user) return res.status(404).send('No user found.');
+        if (!user) return res.status(401).send('No user found.');
         let passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
 
-        if (!passwordIsValid) return res.sendStatus(401).json({ auth: false, token: null });
+        if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
 
 
-        let token = generateToken(user.username);
+        let token = generateToken(user);
         user.token = token
         user.save((err, doc)=>{
             if (err) return res.json({status: 500, message: err});
-            res.json({ auth: true, token: token });
+            res.json({ auth: true, token: token, user: user });
             })
         })
+}
+
+exports.logout =(req, res)=>{
+    verifyAuth(req, res).then(decoded=>{
+        if (decoded.auth !== false ){
+            User.findById(decoded.data._id).then(user=>{
+                user.token = null;
+                user.save()
+            })
+        }else{
+
+        }
+    })
 }
 
 exports.read= (req, res) =>{
@@ -69,5 +86,5 @@ exports.update= (req, res) =>{
 }
 
 exports.delete= (req, res) =>{
-    verifyAuth(req, res)
+
 }

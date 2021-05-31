@@ -25,14 +25,14 @@ async function insertion(block, result){
                 //await TransactionIn.findOne(inElement).countDocuments().then(async (find) => {
                     //if (find == 0){
                         inAAjouter.push(inElement)
-                   // }   
-                //})  
+                   // }
+                //})
             }
             for(let outElement of tx.outs){
                 //await TransactionOut.findOne(outElement).countDocuments().then(async (find) => {
                     //if(find == 0){
                         outAAjouter.push(outElement)
-                   // }  
+                   // }
                // })
            }
            if(result.indexOf(tx)+1 == result.length){
@@ -88,7 +88,7 @@ async function main(){
         spinner.color = "yellow";
         spinner.text = "Traitement en cours ...";
 
-        pool.runTask(i, async (err, result) => {            
+        pool.runTask(i, async (err, result) => {
             if (err){
                 check(i, err).then(()=>{
                     fs.appendFile('logs/error.log', i+" "+err.toString()+'\n', 'utf8', (error) => {
@@ -98,13 +98,14 @@ async function main(){
             }else{
                 if (result != null){
                     const finishedStr = finished+" "+i+" "+ new Date()
+                    finished +=1;
                     fs.appendFileSync('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                         if (error) throw error;
                     });
                     let insertionResult = await insertion(i, result);
                     if (insertionResult == 'ok'){
                         console.log('ok', i);
-                        if (++finished === nblocks){
+                        if (finished === nblocks){
                             //console.log('finished')
                             var end = new Date();
                             const endStr = "ended on "+end+"\n";
@@ -126,7 +127,7 @@ async function main(){
                     //fs.appendFileSync('logs/exec.log', finishedStr+'\n', 'utf8', (error) => {
                     //    if (error) throw error;
                     //});
-                    if (++finished === nblocks){
+                    if (finished === nblocks){
                         //console.log('finished')
                         var end = new Date();
                         const endStr = "ended on "+end+"\n";

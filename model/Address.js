@@ -2,10 +2,24 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 let AddressSchema = new Schema({
-    addr: {type: String},
-    name: {type: String},
-    description: {type: String},
-    type: {type: String, enum: ['Supplier', 'Client', 'Internal']}
+    addr: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    type: {
+        type: String,
+        enum: ['Supplier', 'Client', 'Internal'],
+        required: true
+    },
+    user: {type: mongoose.Types.ObjectId}
 }, {
     collection: 'addresses'
 })

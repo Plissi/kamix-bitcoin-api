@@ -1,3 +1,7 @@
 .env
 logs/
 node_modules/
+doc/
+api_document.pdf
+error.log
+map.js

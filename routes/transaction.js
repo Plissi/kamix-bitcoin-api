@@ -3,6 +3,10 @@ const router = express.Router();
 
 const transactionController = require('../controller/transaction');
 
+/**
+ * @api {get} /hometransactions Récupères les transactions de la page d'accueil
+ *
+ */
 router.get("/hometransactions", transactionController.gethomepagetransactions);
 
 /**

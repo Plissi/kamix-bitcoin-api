@@ -1,0 +1,923 @@
+define({ "api": [
+  {
+    "type": "delete",
+    "url": "/addr/delete/:id",
+    "title": "Supprime une adresse d'un utilisateur",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "id",
+            "description": "<p>adresse ou nom d'adresse à chercher</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "x-access-token",
+            "description": "<p>Le token de l'utilisateur</p>"
+          }
+        ]
+      }
+    },
+    "group": "Adresse",
+    "success": {
+      "examples": [
+        {
+          "title": "Success",
+          "content": "   HTTP/1.1 200 OK\n{\n \"_id\": \"60b3d103d6632319c56d3538\",\n \"addr\": \"XXX\",\n \"name\": \"myaddress\",\n \"description\": \"description\",\n \"type\": \"Client\",\n \"user\": \"60ade0462f9350a490dd5a0e\",\n \"__v\": 0\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    null\n}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n \"auth\": false,\n \"message\": \"Failed to authenticate token.\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "groupTitle": "Adresse",
+    "name": "DeleteAddrDeleteId"
+  },
+  {
+    "type": "get",
+    "url": "/addr/get",
+    "title": "Récupère toutes les adresses d'un utilisateur",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "x-access-token",
+            "description": "<p>Le token de l'utilisateur</p>"
+          }
+        ]
+      }
+    },
+    "group": "Adresse",
+    "success": {
+      "examples": [
+        {
+          "title": "Success",
+          "content": "   HTTP/1.1 200 OK\n[\n{\n       \"_id\": \"60b3d103d6632319c56d3538\",\n       \"addr\": \"XXX\",\n       \"name\": \"myaddress\",\n       \"description\": \"description\",\n       \"type\": \"Client\",\n       \"user\": \"60ade0462f9350a490dd5a0e\",\n       \"__v\": 0\n   },\n{\n       \"_id\": \"60b3d14f3a28682b35118d5d\",\n       \"addr\": \"XXI\",\n       \"name\": \"myothaddress\",\n       \"description\": \"description\",\n       \"type\": \"Client\",\n       \"user\": \"60ade0462f9350a490dd5a0e\",\n       \"__v\": 0\n   }\n]",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    null\n}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n \"auth\": false,\n \"message\": \"Failed to authenticate token.\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "groupTitle": "Adresse",
+    "name": "GetAddrGet"
+  },
+  {
+    "type": "get",
+    "url": "/addr/get/:id",
+    "title": "Récupère une adresse d'un utilisateur",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "id",
+            "description": "<p>adresse ou nom d'adresse à chercher</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "x-access-token",
+            "description": "<p>Le token de l'utilisateur</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "L",
+            "description": "<p>'adresse</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "   HTTP/1.1 200 OK\n{\n \"_id\": \"60b3d103d6632319c56d3538\",\n \"addr\": \"XXX\",\n \"name\": \"myaddress\",\n \"description\": \"description\",\n \"type\": \"Client\",\n \"user\": \"60ade0462f9350a490dd5a0e\",\n \"__v\": 0\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Adresse",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    null\n}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n \"auth\": false,\n \"message\": \"Failed to authenticate token.\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "groupTitle": "Adresse",
+    "name": "GetAddrGetId"
+  },
+  {
+    "type": "post",
+    "url": "/addr/add",
+    "title": "Ajoute une adresse pour un utilisateur",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "address",
+            "description": "<p>adresse</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "name",
+            "description": "<p>nom de l'adresse</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "description",
+            "description": "<p>description de l'adresse</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "type",
+            "description": "<p>type de l'adresse</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "x-access-token",
+            "description": "<p>Le token de l'utilisateur</p>"
+          }
+        ]
+      }
+    },
+    "group": "Adresse",
+    "success": {
+      "examples": [
+        {
+          "title": "Success",
+          "content": "   HTTP/1.1 200 OK\n{\n \"_id\": \"60b3d103d6632319c56d3538\",\n \"addr\": \"XXX\",\n \"name\": \"myaddress\",\n \"description\": \"description\",\n \"type\": \"Client\",\n \"user\": \"60ade0462f9350a490dd5a0e\",\n \"__v\": 0\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    null\n}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n \"auth\": false,\n \"message\": \"Failed to authenticate token.\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "groupTitle": "Adresse",
+    "name": "PostAddrAdd"
+  },
+  {
+    "type": "post",
+    "url": "/addr/update/:id",
+    "title": "Modifie une adresse d'un utilisateur",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "address",
+            "description": "<p>adresse</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "name",
+            "description": "<p>nom de l'adresse</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "description",
+            "description": "<p>description de l'adresse</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "type",
+            "description": "<p>type de l'adresse</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "x-access-token",
+            "description": "<p>Le token de l'utilisateur</p>"
+          }
+        ]
+      }
+    },
+    "group": "Adresse",
+    "success": {
+      "examples": [
+        {
+          "title": "Success",
+          "content": "   HTTP/1.1 200 OK\n{\n \"_id\": \"60b3d103d6632319c56d3538\",\n \"addr\": \"XXX\",\n \"name\": \"myaddress\",\n \"description\": \"description\",\n \"type\": \"Client\",\n \"user\": \"60ade0462f9350a490dd5a0e\",\n \"__v\": 0\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    null\n}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n \"auth\": false,\n \"message\": \"Failed to authenticate token.\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "groupTitle": "Adresse",
+    "name": "PostAddrUpdateId"
+  },
+  {
+    "type": "get",
+    "url": "/getblock/:hash",
+    "title": "Récupère un bloc",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "hash",
+            "description": "<p>Hash du bloc</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "block",
+            "description": "<p>Bloc récupéré</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n   {\n       \"hash\": \"00000000000000000007c3f0ab05678aebaff054aee12ad06b66dc66ddc1de99\",\n       \"confirmations\": 3992,\n       \"strippedsize\": 679948,\n       \"size\": 1952945,\n       \"weight\": 3992789,\n       \"height\": 674360,\n       \"version\": 541065216,\n       \"versionHex\": \"20400000\",\n       \"merkleroot\": \"9a829b13b66bc4fa16c6ca680416b18c52bf637d1a0dff8cc46d8ac1f10ac7dc\",\n       \"tx\": [],\n       \"time\": 1615596919,\n       \"mediantime\": 1615594764,\n       \"nonce\": 2011716836,\n       \"bits\": \"170d1f8c\",\n       \"difficulty\": 21448277761059.71,\n       \"chainwork\": \"00000000000000000000000000000000000000001a8e61971df50fb6d4be831d\",\n       \"nTx\": 904,\n       \"previousblockhash\": \"0000000000000000000cc5c640094603341f971ec482264161ac5631cee2f55b\",\n       \"nextblockhash\": \"00000000000000000003f00726b70afa52cd585c9a857f83c0a382f1f04d3274\"\n   }",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Block",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 404 Not Found\n{\n    \"message\": \"Le bloc n'existe pas\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "groupTitle": "Block",
+    "name": "GetGetblockHash"
+  },
+  {
+    "type": "get",
+    "url": "/getblockhash/:height",
+    "title": "Récupère le hash d'un bloc",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "height",
+            "description": "<p>Hauteur du bloc</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "hash",
+            "description": "<p>Hash du bloc</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n{\n  \"hash\": \"000000000000000000061b3a2e992fc13f689c2f32347ab47fcf4261ca9c3467\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Block",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 404 Not Found\n{\n    \"message\": \"Le bloc n'existe pas\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "groupTitle": "Block",
+    "name": "GetGetblockhashHeight"
+  },
+  {
+    "type": "get",
+    "url": "/getblockcount",
+    "title": "Récupéré la hauteur du block le plus récent",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "blockcount",
+            "description": "<p>Transactions entrantes et sortantes</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n{\n  \"blockcount\": 678351\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Block_Hauteur_du_dernier_block",
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "groupTitle": "Block_Hauteur_du_dernier_block",
+    "name": "GetGetblockcount"
+  },
+  {
+    "type": "get",
+    "url": "/hometransactions",
+    "title": "Récupères les transactions de la page d'accueil",
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "group": "D:\\Données\\stage\\3ème année - KAMIX\\kamix-bitcoin-api\\routes\\transaction.js",
+    "groupTitle": "D:\\Données\\stage\\3ème année - KAMIX\\kamix-bitcoin-api\\routes\\transaction.js",
+    "name": "GetHometransactions"
+  },
+  {
+    "type": "get",
+    "url": "/getbitcoininfos",
+    "title": "Récupère des informations sur la progression du recensement",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "bitcoininfos",
+            "description": "<p>Informations sur la progression du recensement</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n  {\n      \"processed\": 5935,\n      \"total\": 678351,\n      \"percentage\": 1\n  }",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Map",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    \"error\": \n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "groupTitle": "Map",
+    "name": "GetGetbitcoininfos"
+  },
+  {
+    "type": "get",
+    "url": "/map/:height",
+    "title": "Indexer le bloc de hauteur height",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "height",
+            "description": "<p>Hauteur du bloc</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "map",
+            "description": "<p>Transactions entrantes et sortantes</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n{\n  \"ins\": [],\n  \"outs\": []\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Map",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 404 Not Found\n{\n    \"message\": \"Le bloc n'existe pas\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/api.js",
+    "groupTitle": "Map",
+    "name": "GetMapHeight"
+  },
+  {
+    "type": "get",
+    "url": "/address",
+    "title": "Récupère l'adresse",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "address",
+            "description": "<p>Informations sur l'adresse</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n  {\n    \"outs\": [\n        {\n        \"coinbase\": false,\n        \"_id\": \"606ae58920fec9303f15549a\",\n        \"txid\": \"7e9ff077d9dae093ad8d262c8f018b38f7e5552cebda51b8821c281ad4aa2ca4\",\n        \"address\": \"3EWJ288qvRQp4P4frPKrbDken8xsx4yojs\",\n        \"n\": 62,\n        \"value\": 0.00135,\n        \"blockhash\": \"00000000000000000007c3f0ab05678aebaff054aee12ad06b66dc66ddc1de99\",\n        \"blocktime\": 1615596919,\n        \"__v\": 0\n        },\n        {\n        \"coinbase\": false,\n        \"_id\": \"606ae58920fec9303f155499\",\n        \"txid\": \"7e9ff077d9dae093ad8d262c8f018b38f7e5552cebda51b8821c281ad4aa2ca4\",\n        \"address\": \"3GZCpk8aXMPKAotRudZKJ8c3E46KZZX6vP\",\n        \"n\": 1,\n        \"value\": 0.00126023,\n        \"blockhash\": \"00000000000000000007c3f0ab05678aebaff054aee12ad06b66dc66ddc1de99\",\n        \"blocktime\": 1615596919,\n        \"__v\": 0\n        }\n    ],\n    \"ins\": [\n        {\n        \"_id\": \"606ae58920fec9303f1550b1\",\n        \"txid\": \"7e9ff077d9dae093ad8d262c8f018b38f7e5552cebda51b8821c281ad4aa2ca4\",\n        \"address\": \"181ZxHhaZe4xAqCCJPZsrhj8FDfgifSWau\",\n        \"n\": 0,\n        \"value\": 0.00193703,\n        \"blockhash\": \"00000000000000000007c3f0ab05678aebaff054aee12ad06b66dc66ddc1de99\",\n        \"blocktime\": 1615596919,\n        \"__v\": 0\n        }\n    ],\n    \"fee\": 0.0006731999999999999,\n    \"received\": 0.00193703\n  }",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Transaction",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    \"error\":\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "groupTitle": "Transaction",
+    "name": "GetAddress"
+  },
+  {
+    "type": "get",
+    "url": "/addressinfos",
+    "title": "Récupère des informations sur une adresse",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "addressinfos",
+            "description": "<p>Informations sur l'adresse</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n  [\n    {\n    \"date\": 1617137974000,\n    \"txid\": \"90ed2022f70c65ebe370ac94324b198d3945232b2da2d3396c797db1e5ebc52b\",\n    \"sens\": \"withdrawal\",\n    \"crypto\": \"btc\",\n    \"debit\": 0,\n    \"credit\": 0.00193703,\n    \"cotation\": 48973.897419841785,\n    \"debit_euro\": 0,\n    \"credit_euro\": 94.86390851915613,\n    \"fee\": 0.045760379999999046,\n    \"received\": 1.0001515\n    },\n    {\n    \"date\": 1615596919000,\n    \"txid\": \"7e9ff077d9dae093ad8d262c8f018b38f7e5552cebda51b8821c281ad4aa2ca4\",\n    \"sens\": \"deposit\",\n    \"crypto\": \"btc\",\n    \"debit\": 0.00193703,\n    \"credit\": 0,\n    \"cotation\": 47981.15078408417,\n    \"debit_euro\": 92.94092850329456,\n    \"credit_euro\": 0,\n    \"fee\": 0.0006731999999999999,\n    \"received\": 0.00193703\n    }\n  ]",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Transaction",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    \"error\":\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "groupTitle": "Transaction",
+    "name": "GetAddressinfos"
+  },
+  {
+    "type": "get",
+    "url": "/getrawtransaction/:txid",
+    "title": "Récupère une transaction dans la blockchain",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "txid",
+            "description": "<p>id de la transaction</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "transaction",
+            "description": "<p>La transaction</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n  {\n\n  }",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Transaction",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    \"error\":\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "groupTitle": "Transaction",
+    "name": "GetGetrawtransactionTxid"
+  },
+  {
+    "type": "get",
+    "url": "/transaction/?search=txid",
+    "title": "Récupère une transaction dans la BD",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "txid",
+            "description": "<p>id de la transaction</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "transaction",
+            "description": "<p>La transaction</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n  {\n\n  }",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Transaction",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    \"error\":\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "groupTitle": "Transaction",
+    "name": "GetTransactionSearchTxid"
+  },
+  {
+    "type": "get",
+    "url": "/transactions",
+    "title": "Récupère les transactions de la BD",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>json</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "json",
+            "optional": false,
+            "field": "transactions",
+            "description": "<p>Les transactions</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n  {\n\n  }",
+          "type": "json"
+        }
+      ]
+    },
+    "group": "Transaction",
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 500 Not Found\n{\n    \"error\":\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "groupTitle": "Transaction",
+    "name": "GetTransactions"
+  }
+] });

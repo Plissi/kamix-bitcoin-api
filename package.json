@@ -6,26 +6,32 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "doc": "apidoc -i \"D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes\" -o public/apidoc/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "apidoc": "^0.28.1",
     "bcrypt-nodejs": "0.0.3",
     "bitcoinjs-lib": "^5.2.0",
     "body-parser": "^1.19.0",
     "coingecko-api": "^1.0.10",
     "csv-parser": "^3.0.0",
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.6.0",
     "express": "^4.17.1",
-    "helmet": "^4.4.1",
+    "express-validator": "^6.11.1",
+    "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
-    "mongoose": "^5.11.15",
+    "mongoose": "^5.12.12",
     "node-api-doc-generator": "^1.1.1",
     "ora": "^5.4.0",
-    "request": "^2.88.2"
+    "papaparse": "^5.3.1",
+    "request": "^2.88.2",
+    "swagger-jsdoc": "^7.0.0-rc.6",
+    "swagger-ui-express": "^4.1.6"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"

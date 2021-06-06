@@ -265,6 +265,13 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
+            "field": "id",
+            "description": "<p>adresse ou nom d'adresse à chercher</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
             "field": "address",
             "description": "<p>adresse</p>"
           },

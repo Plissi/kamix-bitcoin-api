@@ -69,6 +69,8 @@ async function main(){
     //Create worker pool
     console.log('nbre cpu:', cpuCount);
     const pool = new WorkerPool(cpuCount);
+    pool.setMaxListeners(cpuCount + 1);
+    console.log(pool.getMaxListeners())
 
     var start = new Date()
     const startStr = "started on "+start+"\n";

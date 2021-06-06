@@ -122,6 +122,7 @@ router.get('/get',
 
 /**
  * @api {post} /addr/update/:id Modifie une adresse d'un utilisateur
+ * @apiParam {String} id adresse ou nom d'adresse à chercher
  * @apiParam {String} address adresse
  * @apiParam {String} name nom de l'adresse
  * @apiParam {String} description description de l'adresse

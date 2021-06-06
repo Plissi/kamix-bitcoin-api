@@ -1,7 +1,8 @@
 const Check = require('../model/CheckBlock');
 const TransactionsIn = require('../model/TransactionsIn');
+const {getResult} = require("../rpc_config");
 
-module.exports = (block, error, terminated)=>{ 
+module.exports = (block, error, terminated)=>{
     return new Promise(result => {
         Check.findOne({'height': block}).countDocuments().then(async (find)=>{
             if (find == 0){
@@ -21,7 +22,7 @@ module.exports = (block, error, terminated)=>{
                     console.log(e);
                 }
             }else if (find == 1){
-                let finish = new Date() 
+                let finish = new Date()
                 try {
                     let checkline = await Check.findOne({'height': block});
                     if (error){
@@ -33,7 +34,7 @@ module.exports = (block, error, terminated)=>{
                         checkline.end = finish;
                     } else if (checkline.et == 0){
                         var dataString = `{\"jsonrpc\":\"2.0\",\"id\":\"curltext\",\"method\":\"getblockhash\",\"params\":[${block}]}`;
-            
+
                         let blockhash = await getResult(dataString)
                         let checkin = await TransactionsIn.findOne({'blockhash': blockhash}).countDocuments()
                         if (checkin == 0){
@@ -51,7 +52,7 @@ module.exports = (block, error, terminated)=>{
             }
         }).catch((err) => {
             if (err) console.log(block, 'error', err);
-        }) 
+        })
     })
 }
 

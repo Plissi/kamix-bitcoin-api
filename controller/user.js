@@ -7,7 +7,10 @@ dotenv.config();
 function generateToken(user){
     return jwt.sign({
         exp:Math.floor(Date.now() / 1000) + (60 * 60 * 2),
-        data:user
+        data: {
+            _id: user._id,
+            password: user.password
+        }
     }, process.env.TOKEN_SECRET);
 }
 

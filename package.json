@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
     "server": "nodemon server.js",
-    "doc": "apidoc -i \"D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes\" -o public/apidoc/"
+    "doc": "apidoc -i routes -o public/apidoc/"
   },
   "keywords": [],
   "author": "",

@@ -54,7 +54,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "filename": "routes/address.js",
     "groupTitle": "Adresse",
     "name": "DeleteAddrDeleteId"
   },
@@ -100,7 +100,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "filename": "routes/address.js",
     "groupTitle": "Adresse",
     "name": "GetAddrGet"
   },
@@ -170,7 +170,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "filename": "routes/address.js",
     "groupTitle": "Adresse",
     "name": "GetAddrGetId"
   },
@@ -250,7 +250,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "filename": "routes/address.js",
     "groupTitle": "Adresse",
     "name": "PostAddrAdd"
   },
@@ -337,7 +337,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/address.js",
+    "filename": "routes/address.js",
     "groupTitle": "Adresse",
     "name": "PostAddrUpdateId"
   },
@@ -402,7 +402,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "filename": "routes/block.js",
     "groupTitle": "Block",
     "name": "GetGetblockHash"
   },
@@ -467,7 +467,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "filename": "routes/block.js",
     "groupTitle": "Block",
     "name": "GetGetblockhashHeight"
   },
@@ -510,7 +510,7 @@
     },
     "group": "Block_Hauteur_du_dernier_block",
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "filename": "routes/block.js",
     "groupTitle": "Block_Hauteur_du_dernier_block",
     "name": "GetGetblockcount"
   },
@@ -519,7 +519,7 @@
     "url": "/hometransactions",
     "title": "Récupères les transactions de la page d'accueil",
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "filename": "routes/transaction.js",
     "group": "D:\\Données\\stage\\3ème année - KAMIX\\kamix-bitcoin-api\\routes\\transaction.js",
     "groupTitle": "D:\\Données\\stage\\3ème année - KAMIX\\kamix-bitcoin-api\\routes\\transaction.js",
     "name": "GetHometransactions"
@@ -572,7 +572,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/block.js",
+    "filename": "routes/block.js",
     "groupTitle": "Map",
     "name": "GetGetbitcoininfos"
   },
@@ -637,7 +637,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/api.js",
+    "filename": "routes/api.js",
     "groupTitle": "Map",
     "name": "GetMapHeight"
   },
@@ -689,7 +689,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "filename": "routes/transaction.js",
     "groupTitle": "Transaction",
     "name": "GetAddress"
   },
@@ -741,7 +741,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "filename": "routes/transaction.js",
     "groupTitle": "Transaction",
     "name": "GetAddressinfos"
   },
@@ -806,7 +806,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "filename": "routes/transaction.js",
     "groupTitle": "Transaction",
     "name": "GetGetrawtransactionTxid"
   },
@@ -871,7 +871,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "filename": "routes/transaction.js",
     "groupTitle": "Transaction",
     "name": "GetTransactionSearchTxid"
   },
@@ -923,7 +923,7 @@
       ]
     },
     "version": "0.0.0",
-    "filename": "D:/Données/stage/3ème année - KAMIX/kamix-bitcoin-api/routes/transaction.js",
+    "filename": "routes/transaction.js",
     "groupTitle": "Transaction",
     "name": "GetTransactions"
   }

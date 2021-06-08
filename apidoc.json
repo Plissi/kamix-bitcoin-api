@@ -1,7 +1,7 @@
 {
   "name": "KAMIX Bitcoin API",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Documentation of the KAMIX Bitcoin API",
   "title": "Custom apiDoc browser title",
-  "url": "http://localhost:3000"
+  "url": "https://btc.kamix.io/"
 }

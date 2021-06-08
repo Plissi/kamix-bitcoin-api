@@ -66,14 +66,18 @@ exports.gethomepagetransactions = async(req, res) => {
     let page = Math.max(1, req.query.page);
     let perPage = Math.max(1, req.query.limit);
     while (txids.length < perPage){
-        let txs = await TransactionOut.find({}).sort({blocktime: -1}).skip((perPage * (page - 1)) * times).limit(perPage);
+        let txs = await TransactionOut
+            .find({})
+            .sort({blocktime: -1})
+            .skip((perPage * (page - 1)) + times*perPage)
+            .limit(perPage);
         times++;
         txs.map(element => {
             txids.push(element.txid)
         })
         txids = _.uniq(txids)
     }
-    txids = txids.slice(0, 50);
+    txids = txids.slice(0, perPage);
 
     let txs = []
     for (let txid in txids){

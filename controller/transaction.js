@@ -63,14 +63,15 @@ function getFees(inputs, outputs){
 exports.gethomepagetransactions = async(req, res) => {
     let txids = [];
     let times = 0;
-    while (txids.length < 50){
-        let txs = await TransactionOut.find({}).sort({blocktime: -1}).skip(50 * times).limit(50);
+    let page = Math.max(1, req.query.page);
+    let perPage = Math.max(1, req.query.limit);
+    while (txids.length < perPage){
+        let txs = await TransactionOut.find({}).sort({blocktime: -1}).skip((perPage * (page - 1)) * times).limit(perPage);
         times++;
         txs.map(element => {
             txids.push(element.txid)
         })
         txids = _.uniq(txids)
-        console.log(txids.length)
     }
     txids = txids.slice(0, 50);
 

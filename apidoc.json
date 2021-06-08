@@ -2,6 +2,6 @@
   "name": "KAMIX Bitcoin API",
   "version": "1.0.0",
   "description": "Documentation of the KAMIX Bitcoin API",
-  "title": "Custom apiDoc browser title",
-  "url": "https://btc.kamix.io/"
+  "title": "KAMIX Bitcoin API",
+  "url": "https://btc.kamix.io"
 }

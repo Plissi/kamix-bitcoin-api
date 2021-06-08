@@ -16,7 +16,7 @@ let AddressSchema = new Schema({
     },
     type: {
         type: String,
-        enum: ['Supplier', 'Client', 'Internal'],
+        enum: ['supplier', 'customer', 'internal'],
         required: true
     },
     user: {type: mongoose.Types.ObjectId}

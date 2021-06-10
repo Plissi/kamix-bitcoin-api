@@ -13,8 +13,7 @@ const options = {
 
 exports.pastBtcPrice = (date)=>{
     return new Promise(resolve=>{
-        if (date < new Date(2010, 7, 18).getTime()) {
-            /*
+        if (date > new Date(2013, 4, 27).getTime() && date > new Date(2010, 7, 18).getTime()) {
             date = new Date(date);
             let day, month, year;
             year = date.getFullYear();
@@ -49,10 +48,10 @@ exports.pastBtcPrice = (date)=>{
                 });
               });
 
-            httpsRequest.end()*/
+            httpsRequest.end()
+        } else if (date < new Date(2010, 7, 18).getTime()){
             resolve(0.0858)
-        } else{
-            resolve()
+        } else {
             date = new Date(date);
             let day, month, year;
             year = date.getFullYear();

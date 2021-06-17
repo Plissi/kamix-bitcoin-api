@@ -24,7 +24,8 @@ const rpcMethods = require("./routes/api");
 const tx = require('./routes/transaction');
 const block = require('./routes/block');
 const user = require('./routes/user');
-const addr = require('./routes/address')
+const addr = require('./routes/address');
+const fifo = require('./routes/KmxExplorerFIFO');
 const app = express();
 require("dotenv").config();
 
@@ -50,5 +51,6 @@ app.use(express.json());
 app.use("/api", [rpcMethods, tx, block]);
 app.use("/", user);
 app.use("/addr", addr);
+app.use("/fifo", fifo);
 
 module.exports = app;

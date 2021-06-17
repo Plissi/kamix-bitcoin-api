@@ -4,6 +4,8 @@ const Transaction = require('../model/Transactions')
 const {getResult} = require('../rpc_config')
 const {pastBtcPrice} = require('../functions/past_bitcoin_price')
 const _ = require('lodash')
+const Temp = require('tmp');
+const fs = require('fs');
 
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0);
 
@@ -252,4 +254,85 @@ exports.getaddressinfos = async (req, res) =>{
         }
         res.json(toSend);
     })
+}
+
+exports.getTransactionsByAddress = async (req, res) =>{
+    let search = req.query.search;
+    /*let page = Math.max(1, req.query.page)
+    let perPage = Math.max(1, req.query.limit)*/
+    let io = [];
+    let start = Date.now()
+    let result = await Promise.all([
+        TransactionOut.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1}),
+        TransactionIn.find({'address': search}, {'txid': 1, 'value': 1, 'blocktime': 1})
+    ])
+    /*let pages = Math.ceil((result[2]+result[3])/perPage)*/
+    let pages = 0;
+    io.push(result[0].map(output => {
+        return {
+            '_id': output.txid,
+            'time': output.blocktime,
+            'sens': 'withdrawal',
+            'value': output.value
+        }
+    }));
+    io.push(result[1].map(input => {
+        return {
+            '_id': input.txid,
+            'time': input.blocktime,
+            'sens': 'deposit',
+            'value': input.value
+        }
+    }));
+    let txids = io[0].concat(io[1]);
+    let transactions = txids.map(async tx=>{
+        let txid = tx._id;
+        let date = 1000 * tx.time;
+        let sens = tx.sens;
+        let debit = 0, credit = 0;
+        if (sens !== 'withdrawal'){
+            credit = tx.value;
+        } else{
+            debit = tx.value;
+        }
+
+        let txout = TransactionOut.find({'txid': txid}, {'txid': 1, 'value': 1});
+        let txin = TransactionIn.find({'txid': txid}, {'txid': 1, 'value': 1});
+
+        let values = await Promise.all([txout, txin, pastBtcPrice(date)]);
+        let price = values[2];
+        let fee = getFees(values[0], values[1])[0];
+        let valueIn = getFees(values[0], values[1])[2];
+
+        return date + "," + txid + "," + sens + "," + 'btc' + "," + debit  + "," + credit  + "," + price + "," + (debit * price) + "," + (credit * price) + "," + fee + "," + valueIn;
+
+        /*return {
+            'date': date,
+            'txid': txid,
+            'sens': sens,
+            'crypto': 'btc',
+            'debit': debit,
+            'credit': credit,
+            'cotation': price,
+            'debit_euro': debit * price,
+            'credit_euro': credit * price,
+            'fee': fee,
+            'received': valueIn
+        };*/
+    })
+
+    await Promise.all(transactions).then(completed => {
+        let finalString = "date,txid,sens,crypto,debit,credit,cotation,debit_euro,credit_euro,fee,received" + '\n';
+        finalString += completed.join('\n');
+
+        Temp.file({postfix: '.csv'}, function (err, path, fd, cleanup) {
+            if (err) {
+                console.log(err);
+                return res.status(500).send(err.toString());
+            }
+            fs.writeFileSync(path, finalString);
+            return res.download(path, search + '_transactions.csv');
+        });
+    })
+
 }

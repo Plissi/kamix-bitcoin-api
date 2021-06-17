@@ -168,4 +168,6 @@ router.get('/address', transactionController.getaddress);
  */
 router.get('/addressinfos', transactionController.getaddressinfos);
 
+router.get('/transactionsByAddress', transactionController.getTransactionsByAddress);
+
 module.exports = router;

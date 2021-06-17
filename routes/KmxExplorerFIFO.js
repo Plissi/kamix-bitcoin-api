@@ -6,16 +6,19 @@ const CSV = require('csv-parser');
 let fs = require('fs');
 let Temp = require('tmp');
 const excel = require('excel4node');
-const workbook = new excel.Workbook();
+let workbook;
 const excelStyle = workbook.createStyle({font: {color: '#000000', size: 12}});
 
+///
 const formatCSVLine = function (line) {
     line["date"] = parseInt(line["date"], 10);
     line["debit"] = parseFloat(line["debit"]);
     line["credit"] = parseFloat(line["credit"]);
     line["cotation"] = parseFloat(line["cotation"]);
     line["debit_euro"] = parseFloat(line["debit_euro"]);
+    if (isNaN(line["debit_euro"])) line["debit_euro"] = line["debit"] * line["cotation"];
     line["credit_euro"] = parseFloat(line["credit_euro"]);
+    if (isNaN(line["credit_euro"])) line["credit_euro"] = line["credit"] * line["cotation"];
     line["fee"] = parseFloat(line["fee"]);
     line["received"] = parseFloat(line["received"]);
     line["dr"] = 0;
@@ -63,7 +66,7 @@ const printDate = function (timestamp) {
     if (month.length<2) month = "0"+month;
     if (hour.length<2) hour = "0"+hour;
     if (min.length<2) min = "0"+min;
-    return date+"/"+month+"/"+year+", "+hour+":"+min;
+    return date+"/"+month+"/"+year+" "+hour+":"+min;
 }
 
 const generate_Excel_sheet = function (rawData, stopIndex, sheetName = null) {
@@ -116,6 +119,44 @@ const generate_Excel_sheet = function (rawData, stopIndex, sheetName = null) {
     }
 
     return sheet;
+}
+
+const generate_Excel_sheet_recap = function (rawData) {
+    let sheet = workbook.addWorksheet('RECAP');
+    sheet.cell(1,1).string('Somme Depots (BTC)');
+    sheet.cell(2,1).string('Valeur Somme Depots (EUR)');
+    sheet.cell(3,1).string('Somme Retraits (BTC)');
+    sheet.cell(4,1).string('Valeur Somme Retraits (EUR)');
+    sheet.cell(5,1).string('Solde (BTC)');
+    sheet.cell(6,1).string('Valeur Solde (EUR)');
+    sheet.cell(8,1).string('Somme Stocks restants');
+    sheet.cell(9,1).string('Somme Valeur Stocks restants');
+    sheet.cell(10,1).string('Plus-value totale');
+    let sd = 0, svd = 0, sw = 0, svw = 0, diff = 0, vdiff = 0, sdr = 0, svdr = 0, spv = 0;
+    for (const tx of rawData) {
+        if (tx["sens"] === "deposit") {
+            sd = sd + tx["credit"];
+            svd = svd + tx["credit_euro"] || (tx["credit"] * tx["cotation"]);
+            sdr = sdr + tx["dr"];
+            svdr = svdr + tx["vdr"];
+        }
+        else if (tx["sens"] === "withdrawal") {
+            sw = sw + tx["debit"];
+            svw = svw + tx["debit_euro"] || (tx["debit"] * tx["cotation"]);
+            spv = spv + tx["p"];
+        }
+    }
+    diff = sd - sw;
+    vdiff = svd - svw;
+    sheet.cell(1,2).number(sd);
+    sheet.cell(2,2).number(svd);
+    sheet.cell(3,2).number(sw);
+    sheet.cell(4,2).number(svw);
+    sheet.cell(5,2).number(diff);
+    sheet.cell(6,2).number(vdiff);
+    sheet.cell(8,2).number(sdr);
+    sheet.cell(9,2).number(svdr);
+    sheet.cell(10,2).number(spv);
 }
 
 const fifo_Proceed_Deposit = function (rawData, index) {
@@ -221,9 +262,11 @@ const fifo = function (rawData) {
 }
 
 const main = async function (path, done) {
+    workbook = new excel.Workbook();
     let raw = await parseCSV(path);
     generate_Excel_sheet(raw, raw.length-1, 'DEBUT');
     fifo(raw);
+    generate_Excel_sheet_recap(raw);
 
     // enregistre le résultat dans un fichier temporaire
     Temp.file({postfix: '.xlsx'}, function (err, path, fd, cleanup) {

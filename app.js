@@ -48,9 +48,8 @@ app.use(express.static('public'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
-app.use("/api", [rpcMethods, tx, block]);
+app.use("/api", [rpcMethods, tx, block, fifo]);
 app.use("/", user);
 app.use("/addr", addr);
-app.use("/fifo", fifo);
 
 module.exports = app;

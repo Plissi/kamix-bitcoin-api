@@ -7,9 +7,8 @@ let fs = require('fs');
 let Temp = require('tmp');
 const excel = require('excel4node');
 let workbook;
-const excelStyle = workbook.createStyle({font: {color: '#000000', size: 12}});
+//const excelStyle = workbook.createStyle({font: {color: '#000000', size: 12}});
 
-///
 const formatCSVLine = function (line) {
     line["date"] = parseInt(line["date"], 10);
     line["debit"] = parseFloat(line["debit"]);
@@ -263,23 +262,27 @@ const fifo = function (rawData) {
 
 const main = async function (path, done) {
     workbook = new excel.Workbook();
-    let raw = await parseCSV(path);
-    generate_Excel_sheet(raw, raw.length-1, 'DEBUT');
-    fifo(raw);
-    generate_Excel_sheet_recap(raw);
+    try {
+        let raw = await parseCSV(path);
+        generate_Excel_sheet(raw, raw.length-1, 'DEBUT');
+        fifo(raw);
+        generate_Excel_sheet_recap(raw);
 
-    // enregistre le résultat dans un fichier temporaire
-    Temp.file({postfix: '.xlsx'}, function (err, path, fd, cleanup) {
-        if (err) {
-            throw err;
-        }
-        workbook.write(path, function (err, stats) {
-            done(err, path);
+        // enregistre le résultat dans un fichier temporaire
+        Temp.file({postfix: '.xlsx'}, function (err, path, fd, cleanup) {
+            if (err) {
+                throw err;
+            }
+            workbook.write(path, function (err, stats) {
+                done(err, path);
+            });
         });
-    });
+    } catch (e) {
+        throw e;
+    }
 }
 
-router.post('/', upload.single('file'), function (req, res) {
+router.post('/fifo', upload.single('file'), function (req, res) {
     let file = req.file;
 
     // enregistre le fichier dans un fichier temporaire
@@ -297,7 +300,7 @@ router.post('/', upload.single('file'), function (req, res) {
         res.download(finalPath, 'fifo-' + Date.now() + '.xlsx');
     }).catch(function (err) {
         console.log(err);
-        return res.status(500);
+        return res.status(500).send(err.toString());
     });
 });
 

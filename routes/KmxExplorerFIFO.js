@@ -252,6 +252,9 @@ router.post('/', upload.single('file'), function (req, res) {
             return res.status(500);
         }
         res.download(finalPath, 'fifo-' + Date.now() + '.xlsx');
+    }).catch(function (err) {
+        console.log(err);
+        return res.status(500);
     });
 });
 
